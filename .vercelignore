@@ -12,4 +12,4 @@ deployment_backups/
 /media/
 # Re-include public/media/ so deployed movie poster images are served
 !public/media/
-/staticfiles/
+!staticfiles/
