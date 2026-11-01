@@ -13,6 +13,7 @@ urlpatterns=[
     path('reviews/<int:review_id>/edit/',views.edit_review,name='edit_review'),
     path('reviews/<int:review_id>/report/',views.report_review,name='report_review'),
     path('bookings/<int:booking_id>/ticket/download/', views.download_ticket, name='download_ticket'),
+    path('bookings/<int:booking_id>/ticket/regenerate/', views.regenerate_ticket, name='regenerate_ticket'),
     path('tickets/verify/<str:token>/', views.verify_ticket, name='verify_ticket'),
 ]
 

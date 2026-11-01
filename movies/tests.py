@@ -35,6 +35,7 @@ from .views import (
     extract_youtube_video_id,
     get_youtube_embed_url,
     get_youtube_watch_url,
+    confirm_seat_booking,
 )
 
 
@@ -2831,3 +2832,581 @@ class PaymentTicketIntegrationTests(TestCase):
             ).count(),
             0,
         )
+
+
+class TicketRegenerateTests(TestCase):
+    """Tests for ticket regeneration endpoint."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._media_dir = tempfile.mkdtemp()
+        cls._media_override = override_settings(MEDIA_ROOT=cls._media_dir)
+        cls._media_override.enable()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._media_override.disable()
+        shutil.rmtree(cls._media_dir, ignore_errors=True)
+        super().tearDownClass()
+
+    def setUp(self):
+        self.owner = User.objects.create_user(
+            username='regen_owner', password='secret', email='regen@example.com'
+        )
+        self.other_user = User.objects.create_user(
+            username='regen_other', password='secret', email='regen_other@example.com'
+        )
+        self.movie = Movie.objects.create(
+            name='Regen Test Movie',
+            image=SimpleUploadedFile('regen_test.gif', TINY_GIF, content_type='image/gif'),
+            rating=Decimal('7.5'),
+            cast='Test Cast',
+        )
+        self.theater = Theater.objects.create(
+            name='Regen Test Theater',
+            movie=self.movie,
+            time=timezone.now() + timezone.timedelta(days=1),
+        )
+        self.seat = Seat.objects.create(
+            theater=self.theater, seat_number='R1'
+        )
+        self.payment = Payment.objects.create(
+            user=self.owner,
+            theater=self.theater,
+            seat_ids=[self.seat.id],
+            amount=Decimal('200.00'),
+            currency='INR',
+            status=Payment.STATUS_PAID,
+            razorpay_order_id='order_regen_test',
+            razorpay_payment_id='pay_regen_test',
+            paid_at=timezone.now(),
+        )
+        self.booking = Booking.objects.create(
+            user=self.owner,
+            seat=self.seat,
+            movie=self.movie,
+            theater=self.theater,
+            attended=True,
+        )
+        self.ticket = Ticket.objects.create(
+            booking=self.booking,
+            verification_token=Ticket.generate_verification_token(),
+            status=Ticket.STATUS_FAILED,
+        )
+
+    def test_owner_can_regenerate_failed_ticket(self):
+        """Owner can regenerate a failed ticket."""
+        self.client.login(username='regen_owner', password='secret')
+        response = self.client.post(
+            reverse('regenerate_ticket', args=[self.booking.id])
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+        self.ticket.refresh_from_db()
+        self.assertEqual(self.ticket.status, Ticket.STATUS_GENERATED)
+        self.assertIsNotNone(self.ticket.pdf_blob)
+
+    def test_other_user_cannot_regenerate_ticket(self):
+        """Another user cannot regenerate another user's ticket."""
+        self.client.login(username='regen_other', password='secret')
+        response = self.client.post(
+            reverse('regenerate_ticket', args=[self.booking.id])
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_unauthenticated_user_cannot_regenerate_ticket(self):
+        """Unauthenticated users are redirected to login."""
+        response = self.client.post(
+            reverse('regenerate_ticket', args=[self.booking.id])
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_regenerate_creates_pdf_blob(self):
+        """Regeneration stores PDF as blob in database."""
+        self.client.login(username='regen_owner', password='secret')
+        response = self.client.post(
+            reverse('regenerate_ticket', args=[self.booking.id])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.ticket.refresh_from_db()
+        self.assertIsNotNone(self.ticket.pdf_blob)
+        self.assertGreater(len(self.ticket.pdf_blob), 0)
+
+    def test_regenerate_unpaid_booking_returns_404(self):
+        """Unpaid booking cannot regenerate a ticket."""
+        unpaid_booking = Booking.objects.create(
+            user=self.owner,
+            seat=Seat.objects.create(theater=self.theater, seat_number='R2'),
+            movie=self.movie,
+            theater=self.theater,
+        )
+        self.client.login(username='regen_owner', password='secret')
+        response = self.client.post(
+            reverse('regenerate_ticket', args=[unpaid_booking.id])
+        )
+        self.assertEqual(response.status_code, 404)
+
+
+class TicketBlobDownloadTests(TestCase):
+    """Tests for downloading tickets stored as pdf_blob (no pdf_file)."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._media_dir = tempfile.mkdtemp()
+        cls._media_override = override_settings(MEDIA_ROOT=cls._media_dir)
+        cls._media_override.enable()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._media_override.disable()
+        shutil.rmtree(cls._media_dir, ignore_errors=True)
+        super().tearDownClass()
+
+    def setUp(self):
+        self.owner = User.objects.create_user(
+            username='blob_owner', password='secret', email='blob@example.com'
+        )
+        self.movie = Movie.objects.create(
+            name='Blob Test Movie',
+            image=SimpleUploadedFile('blob_test.gif', TINY_GIF, content_type='image/gif'),
+            rating=Decimal('7.5'),
+            cast='Test Cast',
+        )
+        self.theater = Theater.objects.create(
+            name='Blob Test Theater',
+            movie=self.movie,
+            time=timezone.now() + timezone.timedelta(days=1),
+        )
+        self.seat = Seat.objects.create(
+            theater=self.theater, seat_number='B1'
+        )
+        self.payment = Payment.objects.create(
+            user=self.owner,
+            theater=self.theater,
+            seat_ids=[self.seat.id],
+            amount=Decimal('200.00'),
+            currency='INR',
+            status=Payment.STATUS_PAID,
+            razorpay_order_id='order_blob_test',
+            razorpay_payment_id='pay_blob_test',
+            paid_at=timezone.now(),
+        )
+        self.booking = Booking.objects.create(
+            user=self.owner,
+            seat=self.seat,
+            movie=self.movie,
+            theater=self.theater,
+            attended=True,
+        )
+        self.ticket = Ticket.objects.create(
+            booking=self.booking,
+            verification_token=Ticket.generate_verification_token(),
+            status=Ticket.STATUS_GENERATED,
+            pdf_blob=b'%PDF-1.4 blob ticket content',
+        )
+
+    def test_owner_can_download_blob_ticket(self):
+        """Owner can download ticket stored as pdf_blob (no pdf_file)."""
+        self.client.login(username='blob_owner', password='secret')
+        response = self.client.get(
+            reverse('download_ticket', args=[self.booking.id])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+        self.assertEqual(response.content, b'%PDF-1.4 blob ticket content')
+
+    def test_download_missing_pdf_returns_404(self):
+        """Ticket with no pdf_file and no pdf_blob returns 404."""
+        self.ticket.pdf_blob = None
+        self.ticket.save(update_fields=['pdf_blob'])
+        self.client.login(username='blob_owner', password='secret')
+        response = self.client.get(
+            reverse('download_ticket', args=[self.booking.id])
+        )
+        self.assertEqual(response.status_code, 404)
+
+
+class TicketSynchronousGenerationTests(TestCase):
+    """Tests that ticket generation runs synchronously after payment."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='sync_user', password='secret', email='sync@example.com'
+        )
+        self.movie = Movie.objects.create(
+            name='Sync Test Movie',
+            image=SimpleUploadedFile('sync_test.gif', TINY_GIF, content_type='image/gif'),
+            rating=Decimal('8.0'),
+            cast='Test Cast',
+        )
+        self.theater = Theater.objects.create(
+            name='Sync Test Theater',
+            movie=self.movie,
+            time=timezone.now() + timezone.timedelta(days=1),
+        )
+
+    @patch('movies.views.razorpay.Client')
+    @override_settings(
+        RAZORPAY_KEY_ID='test_key_id',
+        RAZORPAY_KEY_SECRET='test_key_secret',
+    )
+    def test_verified_payment_generates_ticket_synchronously(self, mock_client_class):
+        """A verified payment generates a ticket PDF synchronously."""
+        mock_client = mock_client_class.return_value
+        mock_client.utility.verify_payment_signature.return_value = None
+        mock_client.payment.fetch.return_value = {
+            'id': 'pay_sync_test',
+            'order_id': 'order_sync_test',
+            'status': 'captured',
+            'amount': 20000,
+            'currency': 'INR',
+        }
+
+        self.client.force_login(self.user)
+        seat = Seat.objects.create(theater=self.theater, seat_number='S1')
+
+        payment = Payment.objects.create(
+            user=self.user,
+            theater=self.theater,
+            seat_ids=[seat.id],
+            amount=Decimal('200.00'),
+            currency='INR',
+            status=Payment.STATUS_PENDING,
+            razorpay_order_id='order_sync_test',
+        )
+        reservation = SeatReservation.objects.create(
+            user=self.user,
+            seat=seat,
+            expires_at=timezone.now() + timezone.timedelta(minutes=10),
+        )
+        payment.seat_ids = [seat.id]
+        payment.save(update_fields=['seat_ids'])
+
+        # Simulate the full confirm_seat_booking flow
+        from django.test import RequestFactory
+        factory = RequestFactory()
+        request = factory.post(
+            f'/movies/theater/{self.theater.id}/seats/confirm/',
+            data={
+                'razorpay_order_id': 'order_sync_test',
+                'razorpay_payment_id': 'pay_sync_test',
+                'razorpay_signature': 'mock_signature',
+            },
+        )
+        request.user = self.user
+
+        response = confirm_seat_booking(request, self.theater.id)
+        self.assertEqual(response.status_code, 200)
+        import json
+        data = json.loads(response.content)
+        self.assertTrue(data['success'])
+
+        # Verify ticket was generated synchronously
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, Payment.STATUS_PAID)
+
+        ticket = Ticket.objects.filter(booking__user=self.user).first()
+        self.assertIsNotNone(ticket)
+        self.assertEqual(ticket.status, Ticket.STATUS_GENERATED)
+        self.assertIsNotNone(ticket.pdf_blob)
+        self.assertGreater(len(ticket.pdf_blob), 0)
+
+
+class ProfileTicketStateTests(TestCase):
+    """Tests for profile UI behavior with different ticket states."""
+
+    def setUp(self):
+        self.owner = User.objects.create_user(
+            username='profile_owner', password='secret', email='profile@example.com'
+        )
+        self.movie = Movie.objects.create(
+            name='Profile Test Movie',
+            image=SimpleUploadedFile('profile_test.gif', TINY_GIF, content_type='image/gif'),
+            rating=Decimal('7.5'),
+            cast='Test Cast',
+        )
+        self.theater = Theater.objects.create(
+            name='Profile Test Theater',
+            movie=self.movie,
+            time=timezone.now() + timezone.timedelta(days=1),
+        )
+        self.seat = Seat.objects.create(
+            theater=self.theater, seat_number='P1'
+        )
+
+    def test_profile_shows_download_for_generated_ticket(self):
+        """Profile shows Download Ticket button for generated ticket."""
+        payment = Payment.objects.create(
+            user=self.owner,
+            theater=self.theater,
+            seat_ids=[self.seat.id],
+            amount=Decimal('200.00'),
+            currency='INR',
+            status=Payment.STATUS_PAID,
+            razorpay_order_id='order_profile_test',
+            razorpay_payment_id='pay_profile_test',
+            paid_at=timezone.now(),
+        )
+        booking = Booking.objects.create(
+            user=self.owner,
+            seat=self.seat,
+            movie=self.movie,
+            theater=self.theater,
+            attended=True,
+        )
+        Ticket.objects.create(
+            booking=booking,
+            verification_token=Ticket.generate_verification_token(),
+            status=Ticket.STATUS_GENERATED,
+            pdf_blob=b'%PDF-1.4 profile ticket',
+        )
+
+        self.client.login(username='profile_owner', password='secret')
+        response = self.client.get(reverse('profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Download Ticket')
+
+    def test_profile_shows_regenerate_for_paid_without_ticket(self):
+        """Profile shows Generate Ticket button for paid booking without ticket."""
+        payment = Payment.objects.create(
+            user=self.owner,
+            theater=self.theater,
+            seat_ids=[self.seat.id],
+            amount=Decimal('200.00'),
+            currency='INR',
+            status=Payment.STATUS_PAID,
+            razorpay_order_id='order_profile_no_ticket',
+            razorpay_payment_id='pay_profile_no_ticket',
+            paid_at=timezone.now(),
+        )
+        booking = Booking.objects.create(
+            user=self.owner,
+            seat=self.seat,
+            movie=self.movie,
+            theater=self.theater,
+            attended=True,
+        )
+
+        self.client.login(username='profile_owner', password='secret')
+        response = self.client.get(reverse('profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Generate Ticket')
+
+    def test_profile_shows_pending_for_pending_ticket(self):
+        """Profile shows Ticket Generating for pending ticket."""
+        payment = Payment.objects.create(
+            user=self.owner,
+            theater=self.theater,
+            seat_ids=[self.seat.id],
+            amount=Decimal('200.00'),
+            currency='INR',
+            status=Payment.STATUS_PAID,
+            razorpay_order_id='order_profile_pending',
+            razorpay_payment_id='pay_profile_pending',
+            paid_at=timezone.now(),
+        )
+        booking = Booking.objects.create(
+            user=self.owner,
+            seat=self.seat,
+            movie=self.movie,
+            theater=self.theater,
+            attended=True,
+        )
+        Ticket.objects.create(
+            booking=booking,
+            verification_token=Ticket.generate_verification_token(),
+            status=Ticket.STATUS_PENDING,
+        )
+
+        self.client.login(username='profile_owner', password='secret')
+        response = self.client.get(reverse('profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Ticket Generating')
+
+
+class TicketGenerationResilienceTests(TestCase):
+    """Tests for ticket generation resilience on serverless/read-only environments."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls._media_dir = tempfile.mkdtemp()
+        cls._media_override = override_settings(MEDIA_ROOT=cls._media_dir)
+        cls._media_override.enable()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._media_override.disable()
+        shutil.rmtree(cls._media_dir, ignore_errors=True)
+        super().tearDownClass()
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='resilience_user', password='secret', email='resilience@example.com'
+        )
+        self.movie = Movie.objects.create(
+            name='Resilience Movie',
+            image=SimpleUploadedFile('resilience.gif', TINY_GIF, content_type='image/gif'),
+            rating=Decimal('8.0'),
+            cast='Test Cast',
+        )
+        self.theater = Theater.objects.create(
+            name='Resilience Theater',
+            movie=self.movie,
+            time=timezone.now() + timezone.timedelta(days=1),
+        )
+        self.seat = Seat.objects.create(
+            theater=self.theater, seat_number='Z1'
+        )
+        self.payment = Payment.objects.create(
+            user=self.user,
+            theater=self.theater,
+            seat_ids=[self.seat.id],
+            amount=Decimal('250.00'),
+            currency='INR',
+            status=Payment.STATUS_PAID,
+            razorpay_order_id='order_resilience_test',
+            razorpay_payment_id='pay_resilience_test',
+            paid_at=timezone.now(),
+        )
+        self.booking = Booking.objects.create(
+            user=self.user,
+            seat=self.seat,
+            movie=self.movie,
+            theater=self.theater,
+            attended=True,
+        )
+
+    def test_pdf_blob_saved_even_when_filefield_save_raises_oserror(self):
+        """Failure to write to filesystem (e.g. Vercel read-only FS) still persists pdf_blob."""
+        from unittest.mock import patch
+        from movies.ticket_service import generate_ticket_pdf
+
+        ticket = Ticket.objects.create(
+            booking=self.booking,
+            verification_token=Ticket.generate_verification_token(),
+            status=Ticket.STATUS_PENDING,
+        )
+
+        with patch.object(ticket.pdf_file, 'save', side_effect=OSError(30, 'Read-only file system')):
+            success = generate_ticket_pdf(ticket)
+
+        self.assertTrue(success)
+        ticket.refresh_from_db()
+        self.assertEqual(ticket.status, Ticket.STATUS_GENERATED)
+        self.assertIsNotNone(ticket.pdf_blob)
+        self.assertGreater(len(ticket.pdf_blob), 0)
+        self.assertFalse(bool(ticket.pdf_file))
+
+    def test_process_ticket_succeeds_when_email_dispatch_fails(self):
+        """Ticket processing succeeds and persists ticket even if email task dispatch raises."""
+        from unittest.mock import patch
+        from movies.tasks import process_ticket_after_payment
+
+        with patch('movies.tasks.send_ticket_email.delay', side_effect=Exception('Redis broker connection refused')):
+            result = process_ticket_after_payment(self.payment.id)
+
+        self.assertEqual(result['status'], 'completed')
+        ticket = Ticket.objects.get(booking=self.booking)
+        self.assertEqual(ticket.status, Ticket.STATUS_GENERATED)
+        self.assertIsNotNone(ticket.pdf_blob)
+        self.assertFalse(ticket.email_sent)
+        self.assertEqual(self.payment.status, Payment.STATUS_PAID)
+
+    def test_download_corrupt_or_empty_pdf_returns_404(self):
+        """A ticket with empty pdf_blob (b'') and no pdf_file returns 404."""
+        ticket = Ticket.objects.create(
+            booking=self.booking,
+            verification_token=Ticket.generate_verification_token(),
+            status=Ticket.STATUS_GENERATED,
+            pdf_blob=b'',
+        )
+        self.client.login(username='resilience_user', password='secret')
+        response = self.client.get(reverse('download_ticket', args=[self.booking.id]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_download_fallback_to_pdf_file_when_blob_none(self):
+        """Download falls back to pdf_file when pdf_blob is None."""
+        ticket = Ticket.objects.create(
+            booking=self.booking,
+            verification_token=Ticket.generate_verification_token(),
+            status=Ticket.STATUS_GENERATED,
+            pdf_blob=None,
+        )
+        ticket.pdf_file.save(
+            'fallback_ticket.pdf',
+            ContentFile(b'%PDF-1.4 file fallback content'),
+            save=True,
+        )
+        self.client.login(username='resilience_user', password='secret')
+        response = self.client.get(reverse('download_ticket', args=[self.booking.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+
+    def test_verify_ticket_with_pdf_blob_only(self):
+        """QR verification succeeds for tickets stored as pdf_blob without pdf_file."""
+        token = Ticket.generate_verification_token()
+        ticket = Ticket.objects.create(
+            booking=self.booking,
+            verification_token=token,
+            status=Ticket.STATUS_GENERATED,
+            pdf_blob=b'%PDF-1.4 qr test blob',
+            pdf_file=None,
+        )
+        response = self.client.get(reverse('verify_ticket', args=[token]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['valid'])
+
+    def test_regenerate_ticket_browser_get_redirects_to_profile(self):
+        """Browser GET request to regenerate_ticket redirects to profile with success message."""
+        self.client.login(username='resilience_user', password='secret')
+        response = self.client.get(
+            reverse('regenerate_ticket', args=[self.booking.id]),
+            HTTP_ACCEPT='text/html,application/xhtml+xml',
+        )
+        self.assertRedirects(response, reverse('profile'))
+        ticket = Ticket.objects.get(booking=self.booking)
+        self.assertEqual(ticket.status, Ticket.STATUS_GENERATED)
+        self.assertIsNotNone(ticket.pdf_blob)
+
+    def test_duplicate_process_ticket_idempotent(self):
+        """Calling process_ticket_after_payment repeatedly does not create duplicate tickets."""
+        from movies.tasks import process_ticket_after_payment
+
+        res1 = process_ticket_after_payment(self.payment.id)
+        res2 = process_ticket_after_payment(self.payment.id)
+
+        self.assertEqual(Ticket.objects.filter(booking=self.booking).count(), 1)
+        ticket = Ticket.objects.get(booking=self.booking)
+        self.assertEqual(ticket.status, Ticket.STATUS_GENERATED)
+
+    def test_schedule_ticket_processing_runs_on_commit(self):
+        """schedule_ticket_processing processes the ticket after transaction commit."""
+        from movies.tasks import schedule_ticket_processing
+        from django.db import transaction
+
+        with self.captureOnCommitCallbacks(execute=True):
+            with transaction.atomic():
+                schedule_ticket_processing(self.payment.id)
+
+        ticket = Ticket.objects.get(booking=self.booking)
+        self.assertEqual(ticket.status, Ticket.STATUS_GENERATED)
+        self.assertIsNotNone(ticket.pdf_blob)
+
+    def test_profile_shows_no_ticket_for_unpaid_booking(self):
+        """Profile displays No Ticket badge for unpaid bookings."""
+        unpaid_seat = Seat.objects.create(theater=self.theater, seat_number='Z2')
+        unpaid_booking = Booking.objects.create(
+            user=self.user,
+            seat=unpaid_seat,
+            movie=self.movie,
+            theater=self.theater,
+            attended=False,
+        )
+        self.client.login(username='resilience_user', password='secret')
+        response = self.client.get(reverse('profile'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'No Ticket')

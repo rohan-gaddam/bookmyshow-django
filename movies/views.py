@@ -1,6 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
+import logging
 import os
 import hmac
 import hashlib
@@ -10,6 +11,7 @@ from django.utils.crypto import constant_time_compare
 import razorpay
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse
+from django.urls import reverse
 import re
 import time
 from urllib.parse import parse_qs, urlsplit
@@ -25,6 +27,9 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, OperationalError, transaction
 from django.utils import timezone
 from . import tasks
+from .ticket_service import generate_ticket_pdf
+
+logger = logging.getLogger(__name__)
 
 
 MOVIES_PER_PAGE = 12
@@ -1049,9 +1054,17 @@ def confirm_seat_booking(request, theater_id):
             status=404,
         )
 
-    # Schedule ticket generation and email after the transaction commits,
+    # Generate ticket synchronously after the transaction commits,
     # so the booking/payment response is not delayed by background work.
-    tasks.schedule_ticket_processing(current_payment.id)
+    # Celery is not configured in production, so we call the task function
+    # directly rather than via .delay().
+    try:
+        tasks.process_ticket_after_payment(current_payment.id)
+    except Exception:
+        # Ticket generation failure must not invalidate a successful payment.
+        logger.exception(
+            'Ticket generation failed for payment %s.', current_payment.id
+        )
 
     return JsonResponse({
         'success': True,
@@ -1555,24 +1568,38 @@ def download_ticket(request, booking_id):
             status=202,
         )
 
-    if ticket.status == Ticket.STATUS_FAILED or not ticket.pdf_file:
+    has_valid_blob = bool(ticket.pdf_blob) and len(ticket.pdf_blob) > 0
+    has_valid_file = bool(ticket.pdf_file)
+
+    if ticket.status == Ticket.STATUS_FAILED or (not has_valid_blob and not has_valid_file):
         return JsonResponse(
             {'error': 'Ticket generation failed. Please contact support.'},
             status=404,
         )
 
-    # Serve the PDF file
+    # Serve the PDF file from pdf_blob (serverless-safe) or pdf_file (local dev)
     try:
-        ticket.pdf_file.open('rb')
-        response = FileResponse(
-            ticket.pdf_file,
-            content_type='application/pdf',
-            as_attachment=True,
-            filename=escape_uri_path(f'ticket_booking_{booking.id}.pdf'),
-        )
-        ticket.pdf_file.close()
-        return response
-    except FileNotFoundError:
+        if has_valid_blob:
+            response = HttpResponse(
+                ticket.pdf_blob,
+                content_type='application/pdf',
+            )
+            response['Content-Disposition'] = (
+                f'attachment; filename="{escape_uri_path(f"ticket_booking_{booking.id}.pdf")}"'
+            )
+            return response
+        if has_valid_file:
+            ticket.pdf_file.open('rb')
+            response = FileResponse(
+                ticket.pdf_file,
+                content_type='application/pdf',
+                as_attachment=True,
+                filename=escape_uri_path(f'ticket_booking_{booking.id}.pdf'),
+            )
+            ticket.pdf_file.close()
+            return response
+        raise FileNotFoundError('No PDF file or blob available')
+    except (FileNotFoundError, OSError, ValueError):
         return JsonResponse(
             {'error': 'Ticket file not found.'},
             status=404,
@@ -1599,9 +1626,10 @@ def verify_ticket(request, token):
     booking = ticket.booking
     payment = get_paid_payment_for_booking(booking)
 
+    has_valid_data = (bool(ticket.pdf_blob) and len(ticket.pdf_blob) > 0) or bool(ticket.pdf_file)
     is_valid = (
         ticket.status == Ticket.STATUS_GENERATED
-        and bool(ticket.pdf_file)
+        and has_valid_data
         and payment is not None
     )
 
@@ -1643,3 +1671,90 @@ def serve_media(request, file_path):
                 content_type = 'image/jpeg'
             return HttpResponse(content, content_type=content_type)
     raise Http404("Media file not found")
+
+
+@login_required(login_url='/login/')
+def regenerate_ticket(request, booking_id):
+    """
+    Generate or regenerate a ticket PDF for the authenticated user's own paid booking.
+
+    Idempotent: safe to call repeatedly. Only the booking owner may trigger
+    regeneration. Returns HTTP 200 on success, HTTP 404 if the booking or
+    its paid payment does not exist, HTTP 403 for unauthorized access.
+    Supports both browser navigation (GET with redirect) and API calls (POST/JSON).
+    """
+    booking = get_object_or_404(Booking, id=booking_id)
+
+    # Authorization: only the booking owner may regenerate
+    if booking.user_id != request.user.id:
+        if request.method == 'GET' and 'text/html' in request.headers.get('accept', ''):
+            messages.error(request, 'You do not have permission to generate this ticket.')
+            return redirect('profile')
+        return JsonResponse(
+            {'error': 'You do not have permission to regenerate this ticket.'},
+            status=403,
+        )
+
+    # Only paid bookings can have tickets regenerated
+    payment = get_paid_payment_for_booking(booking)
+    if not payment:
+        if request.method == 'GET' and 'text/html' in request.headers.get('accept', ''):
+            messages.error(request, 'No verified payment found for this booking.')
+            return redirect('profile')
+        return JsonResponse(
+            {'error': 'No valid ticket available for this booking.'},
+            status=404,
+        )
+
+    # Get or create the ticket record
+    ticket, _ = Ticket.objects.get_or_create(
+        booking=booking,
+        defaults={
+            'verification_token': Ticket.generate_verification_token(),
+            'status': Ticket.STATUS_PENDING,
+        },
+    )
+
+    # Reset status and regenerate
+    ticket.status = Ticket.STATUS_PENDING
+    ticket.pdf_blob = None
+    ticket.pdf_file = None
+    ticket.email_sent = False
+    ticket.email_attempts = 0
+    ticket.last_email_error = ''
+    ticket.save()
+
+    # Generate PDF synchronously
+    try:
+        success = generate_ticket_pdf(ticket)
+        ticket.refresh_from_db()
+
+        if success and (ticket.pdf_blob or ticket.pdf_file):
+            if request.method == 'GET' and 'text/html' in request.headers.get('accept', ''):
+                messages.success(request, 'Ticket generated successfully!')
+                return redirect('profile')
+            return JsonResponse({
+                'success': True,
+                'message': 'Ticket regenerated successfully.',
+                'ticket_id': ticket.id,
+                'download_url': reverse('download_ticket', args=[booking.id]),
+            })
+        else:
+            if request.method == 'GET' and 'text/html' in request.headers.get('accept', ''):
+                messages.error(request, 'Ticket generation failed. Please contact support.')
+                return redirect('profile')
+            return JsonResponse({
+                'success': False,
+                'error': 'Ticket generation failed. Please contact support.',
+            }, status=500)
+    except Exception as exc:
+        logger.exception(
+            'Ticket regeneration failed for booking %s: %s', booking.id, exc
+        )
+        if request.method == 'GET' and 'text/html' in request.headers.get('accept', ''):
+            messages.error(request, 'Ticket generation failed. Please contact support.')
+            return redirect('profile')
+        return JsonResponse({
+            'success': False,
+            'error': 'Ticket generation failed. Please contact support.',
+        }, status=500)

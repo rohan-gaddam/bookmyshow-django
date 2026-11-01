@@ -42,15 +42,15 @@ def send_ticket_email(self, ticket_id):
     booking = ticket.booking
     user = booking.user
 
-    if not ticket.pdf_file:
+    has_pdf = (bool(ticket.pdf_blob) and len(ticket.pdf_blob) > 0) or bool(ticket.pdf_file)
+    if not has_pdf:
         logger.error(
-            'Ticket %s has no PDF file; cannot send email for booking %s.',
+            'Ticket %s has no PDF data; cannot send email for booking %s.',
             ticket_id,
             booking.id,
         )
-        ticket.status = Ticket.STATUS_FAILED
         ticket.last_email_error = 'No PDF file available.'
-        ticket.save(update_fields=['status', 'last_email_error', 'updated_at'])
+        ticket.save(update_fields=['last_email_error', 'updated_at'])
         return {'error': 'no_pdf_file', 'ticket_id': ticket_id}
 
     if not user.email:
@@ -95,9 +95,27 @@ def send_ticket_email(self, ticket_id):
     email.attach_alternative(html_message, 'text/html')
 
     # Attach the PDF ticket
-    ticket.pdf_file.open('rb')
-    pdf_data = ticket.pdf_file.read()
-    ticket.pdf_file.close()
+    pdf_data = None
+    if ticket.pdf_blob:
+        pdf_data = ticket.pdf_blob
+    elif ticket.pdf_file:
+        try:
+            ticket.pdf_file.open('rb')
+            pdf_data = ticket.pdf_file.read()
+            ticket.pdf_file.close()
+        except Exception:
+            pdf_data = None
+
+    if pdf_data is None:
+        logger.error(
+            'Ticket %s has no PDF file; cannot send email for booking %s.',
+            ticket_id,
+            booking.id,
+        )
+        ticket.last_email_error = 'No PDF file available.'
+        ticket.save(update_fields=['last_email_error', 'updated_at'])
+        return {'error': 'no_pdf_file', 'ticket_id': ticket_id}
+
     email.attach(
         f'ticket_booking_{booking.id}.pdf',
         pdf_data,
@@ -213,20 +231,32 @@ def process_ticket_after_payment(payment_id):
         )
 
         # Reuse a valid generated PDF; regenerate if missing or incomplete.
-        file_exists = bool(ticket.pdf_file)
-        if file_exists:
+        has_valid_blob = bool(ticket.pdf_blob) and len(ticket.pdf_blob) > 0
+        file_exists = False
+        if ticket.pdf_file:
             try:
                 file_exists = ticket.pdf_file.storage.exists(ticket.pdf_file.name)
             except (OSError, ValueError):
                 file_exists = False
 
-        if ticket.status != Ticket.STATUS_GENERATED or not file_exists:
+        has_valid_pdf = has_valid_blob or file_exists
+
+        if ticket.status != Ticket.STATUS_GENERATED or not has_valid_pdf:
             ticket.status = Ticket.STATUS_PENDING
             ticket.save(update_fields=["status", "updated_at"])
             success = _generate_ticket_pdf(ticket)
             ticket.refresh_from_db()
 
-            if not success or not ticket.pdf_file:
+            has_valid_blob = bool(ticket.pdf_blob) and len(ticket.pdf_blob) > 0
+            file_exists = False
+            if ticket.pdf_file:
+                try:
+                    file_exists = ticket.pdf_file.storage.exists(ticket.pdf_file.name)
+                except (OSError, ValueError):
+                    file_exists = False
+            has_valid_pdf = has_valid_blob or file_exists
+
+            if not success or not has_valid_pdf:
                 logger.error(
                     "Ticket PDF generation failed for booking %s.", booking.id
                 )
@@ -238,7 +268,16 @@ def process_ticket_after_payment(payment_id):
                 continue
 
         if not ticket.email_sent:
-            send_ticket_email.delay(ticket.id)
+            # Send email via Celery task if broker is available;
+            # failures are logged accurately and do not fail ticket generation.
+            try:
+                send_ticket_email.delay(ticket.id)
+            except Exception as exc:
+                logger.warning(
+                    'Email dispatch skipped for ticket %s (broker unavailable): %s',
+                    ticket.id,
+                    exc,
+                )
 
         results.append({
             "booking_id": booking.id,
@@ -268,13 +307,19 @@ def schedule_ticket_processing(payment_id):
 
     Safe to call both inside and outside an atomic block:
     - Inside transaction.atomic(): defers until commit via on_commit.
-    - Outside: runs immediately (via apply_async which still queues to Celery).
+    - Outside: runs immediately.
     """
     def _schedule():
-        process_ticket_after_payment.delay(payment_id)
-        logger.debug(
-            'Scheduled ticket processing for payment %s after commit.',
-            payment_id,
-        )
+        try:
+            process_ticket_after_payment(payment_id)
+            logger.debug(
+                'Processed ticket for payment %s after commit.',
+                payment_id,
+            )
+        except Exception:
+            logger.exception(
+                'Ticket processing failed for payment %s after commit.',
+                payment_id,
+            )
 
     transaction.on_commit(_schedule)

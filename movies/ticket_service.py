@@ -1,4 +1,4 @@
-﻿"""
+"""
 Ticket generation service.
 
 Generates professional PDF cinema tickets with QR codes for verified bookings.
@@ -189,10 +189,23 @@ def generate_ticket_pdf(ticket):
         pdf_bytes = buffer.read()
         buffer.close()
 
-        pdf_filename = f'ticket_booking_{booking.id}.pdf'
-        ticket.pdf_file.save(pdf_filename, ContentFile(pdf_bytes), save=False)
+        # Store PDF bytes directly in database blob first (serverless-safe persistence)
+        ticket.pdf_blob = pdf_bytes
         ticket.status = Ticket.STATUS_GENERATED
         ticket.generated_at = timezone.now()
+
+        # Attempt to save to local FileField if filesystem is writable (local dev only)
+        try:
+            pdf_filename = f'ticket_booking_{booking.id}.pdf'
+            ticket.pdf_file.save(pdf_filename, ContentFile(pdf_bytes), save=False)
+        except Exception as file_exc:
+            logger.warning(
+                'Could not save ticket PDF to filesystem for booking %s (using pdf_blob): %s',
+                booking.id,
+                file_exc,
+            )
+            ticket.pdf_file = None
+
         ticket.save()
 
         logger.info(

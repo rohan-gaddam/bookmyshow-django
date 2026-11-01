@@ -1,4 +1,4 @@
-﻿{% extends "users/basic.html" %} {% block content %}
+{% extends "users/basic.html" %} {% block content %}
 
 <div class="container py-5">
   <div class="row">
@@ -64,20 +64,22 @@
                         <i class="fas fa-chair me-2 text-muted"> </i>  Seat: {{ booking.seat.seat_number }}<br>
                         <i class="far fa-clock me-2 text-muted"> </i>  {{ booking.booked_at|date:"F d, Y H:i" }}
                       </p>
-                      {% if booking.ticket %}
-                        {% if booking.ticket.is_downloadable %}
+                      {% if booking.ticket_safe %}
+                        {% if booking.ticket_safe.is_downloadable %}
                           <a href="{% url 'download_ticket' booking.id %}" class="btn btn-primary btn-sm">
                             <i class="fas fa-download me-1"></i> Download Ticket
                           </a>
-                        {% elif booking.ticket.status == 'pending' %}
+                        {% elif booking.ticket_safe.status == 'pending' %}
                           <span class="badge bg-info text-dark">Ticket Generating</span>
                         {% else %}
-                          <span class="badge bg-warning text-dark">Ticket Failed</span>
+                          <a href="{% url 'regenerate_ticket' booking.id %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-redo me-1"></i> Regenerate Ticket
+                          </a>
                         {% endif %}
-                      {% elif booking.payment_set.first.status == 'paid' %}
-                        <button class="btn btn-outline-primary btn-sm" disabled>
-                          <i class="fas fa-ticket me-1"></i> Generating...
-                        </button>
+                      {% elif booking.has_paid_payment %}
+                        <a href="{% url 'regenerate_ticket' booking.id %}" class="btn btn-outline-primary btn-sm">
+                          <i class="fas fa-ticket me-1"></i> Generate Ticket
+                        </a>
                       {% else %}
                         <span class="badge bg-secondary">No Ticket</span>
                       {% endif %}

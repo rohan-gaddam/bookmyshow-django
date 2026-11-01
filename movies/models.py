@@ -1,4 +1,4 @@
-﻿import os
+import os
 import uuid
 
 from django.core.validators import MinValueValidator
@@ -73,6 +73,20 @@ class Booking(models.Model):
     attended = models.BooleanField(default=False, help_text='Confirm that the customer attended the show.')
     def __str__(self):
         return f'Booking by{self.user.username} for {self.seat.seat_number} at {self.theater.name}'
+
+    @property
+    def has_paid_payment(self):
+        """Return True if a paid payment exists for this booking."""
+        from .payment_utils import get_paid_payment_for_booking
+        return get_paid_payment_for_booking(self) is not None
+
+    @property
+    def ticket_safe(self):
+        """Safely return ticket if present and readable from database."""
+        try:
+            return self.ticket
+        except Exception:
+            return None
 
 class Genre(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -388,7 +402,12 @@ class Ticket(models.Model):
         upload_to=ticket_upload_path,
         blank=True,
         null=True,
-        help_text='Generated PDF ticket file.',
+        help_text='Generated PDF ticket file (local dev only).',
+    )
+    pdf_blob = models.BinaryField(
+        blank=True,
+        null=True,
+        help_text='PDF ticket stored as binary blob for serverless persistence.',
     )
     status = models.CharField(
         max_length=20,
@@ -412,7 +431,9 @@ class Ticket(models.Model):
     @property
     def is_downloadable(self):
         """Ticket can be downloaded only when generated and its payment is paid."""
-        if self.status != self.STATUS_GENERATED or not self.pdf_file:
+        if self.status != self.STATUS_GENERATED:
+            return False
+        if not self.pdf_file and not self.pdf_blob:
             return False
 
         from .payment_utils import get_paid_payment_for_booking
