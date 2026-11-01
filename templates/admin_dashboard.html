@@ -1,0 +1,368 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BookMyShow | Admin Dashboard</title>
+    <style>
+        :root {
+            --bg: #f4f6fb;
+            --card: #ffffff;
+            --ink: #172033;
+            --muted: #657089;
+            --line: #e4e8f0;
+            --accent: #e11d48;
+            --accent-dark: #be123c;
+            --nav: #111827;
+            --green: #047857;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font: 15px/1.5 "Segoe UI", Arial, sans-serif;
+        }
+        header {
+            background: var(--nav);
+            color: white;
+            padding: 22px clamp(18px, 4vw, 56px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+        header h1 { margin: 0; font-size: 24px; }
+        header p { margin: 5px 0 0; color: #cbd5e1; }
+        .brand { color: #fb7185; font-weight: 800; }
+        main {
+            max-width: 1500px;
+            padding: 28px clamp(14px, 3vw, 42px) 48px;
+            margin: auto;
+        }
+        .toolbar, .panel, .metric {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            box-shadow: 0 3px 14px rgba(20, 30, 55, .035);
+        }
+        .toolbar {
+            padding: 18px;
+            display: flex;
+            align-items: end;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+        .field { display: grid; gap: 5px; }
+        label { font-size: 12px; color: var(--muted); font-weight: 700; }
+        input, button, .button {
+            border: 1px solid #d7ddea;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font: inherit;
+        }
+        input { background: white; color: var(--ink); }
+        button, .button {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 700;
+        }
+        button:hover, .button:hover { background: var(--accent-dark); }
+        .export-links { display: flex; gap: 8px; flex-wrap: wrap; }
+        .export-links .button {
+            background: #fff;
+            color: var(--accent-dark);
+            border-color: #fecdd3;
+            font-size: 13px;
+        }
+        .export-links .button:hover { background: #fff1f2; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+        .metric { padding: 19px; min-width: 0; }
+        .metric .label { color: var(--muted); font-size: 13px; font-weight: 600; }
+        .metric .value {
+            font-size: clamp(20px, 2.3vw, 30px);
+            font-weight: 800;
+            margin-top: 9px;
+            overflow-wrap: anywhere;
+        }
+        .metric .note { color: var(--muted); font-size: 12px; margin-top: 6px; }
+        .section-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+        .panel { padding: 20px; min-width: 0; margin-bottom: 18px; }
+        .section-grid .panel { margin-bottom: 0; }
+        h2 { font-size: 17px; margin: 0 0 14px; }
+        .subtext { color: var(--muted); font-size: 12px; margin: -7px 0 14px; }
+        .table-wrap { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td {
+            text-align: left;
+            padding: 10px 9px;
+            border-bottom: 1px solid var(--line);
+            vertical-align: top;
+        }
+        th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+        tbody tr:last-child td { border-bottom: 0; }
+        .empty { color: var(--muted); padding: 18px 8px; text-align: center; }
+        .notice {
+            border-radius: 9px;
+            background: #fff7ed;
+            color: #9a3412;
+            border: 1px solid #fed7aa;
+            padding: 11px 14px;
+            margin-bottom: 14px;
+        }
+        .pill {
+            display: inline-block;
+            background: #ecfdf5;
+            color: var(--green);
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        footer { color: var(--muted); font-size: 12px; padding-top: 8px; }
+        @media (max-width: 950px) {
+            .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .section-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 21px; }
+            .toolbar > * { width: 100%; }
+            .toolbar input, .toolbar button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div>
+        <h1><span class="brand">BookMyShow</span> Admin Dashboard</h1>
+        <p>Business insights, bookings, revenue and user activity</p>
+    </div>
+    <div><span class="pill">Authorized staff only</span></div>
+</header>
+
+<main>
+    {% if date_errors %}
+        {% for error in date_errors %}
+            <div class="notice">{{ error }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form class="toolbar" method="get">
+        <div class="field">
+            <label for="start_date">Start date</label>
+            <input type="date" id="start_date" name="start_date" value="{{ start_date }}" required>
+        </div>
+        <div class="field">
+            <label for="end_date">End date</label>
+            <input type="date" id="end_date" name="end_date" value="{{ end_date }}" required>
+        </div>
+        <button type="submit">Apply date range</button>
+        <div class="export-links">
+            <a class="button" href="{% url 'admin_dashboard_csv' %}?report=revenue&amp;start_date={{ start_date }}&amp;end_date={{ end_date }}">Revenue CSV</a>
+            <a class="button" href="{% url 'admin_dashboard_csv' %}?report=bookings&amp;start_date={{ start_date }}&amp;end_date={{ end_date }}">Bookings CSV</a>
+            <a class="button" href="{% url 'admin_dashboard_csv' %}?report=movies&amp;start_date={{ start_date }}&amp;end_date={{ end_date }}">Movies CSV</a>
+            <a class="button" href="{% url 'admin_dashboard_csv' %}?report=theaters&amp;start_date={{ start_date }}&amp;end_date={{ end_date }}">Theaters CSV</a>
+            <a class="button" href="{% url 'admin_dashboard_csv' %}?report=payments&amp;start_date={{ start_date }}&amp;end_date={{ end_date }}">Payments CSV</a>
+            <a class="button" href="{% url 'admin_dashboard_csv' %}?report=users&amp;start_date={{ start_date }}&amp;end_date={{ end_date }}">Users CSV</a>
+        </div>
+    </form>
+
+    <section class="grid">
+        <article class="metric">
+            <div class="label">Revenue today</div>
+            <div class="value">₹{{ revenue_cards.today|floatformat:2 }}</div>
+            <div class="note">Verified paid payments</div>
+        </article>
+        <article class="metric">
+            <div class="label">Revenue this week</div>
+            <div class="value">₹{{ revenue_cards.this_week|floatformat:2 }}</div>
+            <div class="note">Monday through today</div>
+        </article>
+        <article class="metric">
+            <div class="label">Revenue this month</div>
+            <div class="value">₹{{ revenue_cards.this_month|floatformat:2 }}</div>
+            <div class="note">Current calendar month</div>
+        </article>
+        <article class="metric">
+            <div class="label">Revenue this year</div>
+            <div class="value">₹{{ revenue_cards.this_year|floatformat:2 }}</div>
+            <div class="note">Current calendar year</div>
+        </article>
+        <article class="metric">
+            <div class="label">Bookings in selected range</div>
+            <div class="value">{{ selected_booking_count }}</div>
+            <div class="note">{{ start_date }} to {{ end_date }}</div>
+        </article>
+        <article class="metric">
+            <div class="label">Revenue in selected range</div>
+            <div class="value">₹{{ selected_revenue|floatformat:2 }}</div>
+            <div class="note">Based on paid_at timestamp</div>
+        </article>
+    </section>
+
+    <section class="section-grid">
+        <article class="panel">
+            <h2>Booking trends</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Date</th><th>Bookings</th></tr></thead>
+                    <tbody>
+                    {% for row in booking_trend %}
+                        <tr><td>{{ row.period|date:"d M Y" }}</td><td>{{ row.total }}</td></tr>
+                    {% empty %}
+                        <tr><td colspan="2" class="empty">No bookings in this range.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel">
+            <h2>Revenue trend</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Date</th><th>Revenue</th><th>Transactions</th></tr></thead>
+                    <tbody>
+                    {% for row in revenue_trend %}
+                        <tr><td>{{ row.period|date:"d M Y" }}</td><td>₹{{ row.revenue|floatformat:2 }}</td><td>{{ row.transactions }}</td></tr>
+                    {% empty %}
+                        <tr><td colspan="3" class="empty">No paid transactions in this range.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel">
+            <h2>Most booked movies</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Movie</th><th>Bookings</th></tr></thead>
+                    <tbody>
+                    {% for row in top_movies %}
+                        <tr><td>{{ row.movie__name }}</td><td>{{ row.total_bookings }}</td></tr>
+                    {% empty %}
+                        <tr><td colspan="2" class="empty">No movie bookings found.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel">
+            <h2>Top-performing theaters</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Theater</th><th>Bookings</th></tr></thead>
+                    <tbody>
+                    {% for row in top_theaters %}
+                        <tr><td>{{ row.theater__name }}</td><td>{{ row.total_bookings }}</td></tr>
+                    {% empty %}
+                        <tr><td colspan="2" class="empty">No theater bookings found.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </section>
+
+    <section class="panel">
+        <h2>Theater occupancy</h2>
+        <p class="subtext">Up to 100 showtimes in the selected date range. Occupancy is booked seats divided by total seats.</p>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Movie</th><th>Theater</th><th>Showtime</th><th>Booked seats</th><th>Total seats</th><th>Occupancy</th></tr></thead>
+                <tbody>
+                {% for row in occupancy %}
+                    <tr>
+                        <td>{{ row.movie__name }}</td>
+                        <td>{{ row.name }}</td>
+                        <td>{{ row.time|date:"d M Y, H:i" }}</td>
+                        <td>{{ row.booked_seats }}</td>
+                        <td>{{ row.total_seats }}</td>
+                        <td>{{ row.occupancy_percent }}%</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="empty">No showtimes found in this range.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="section-grid">
+        <article class="panel">
+            <h2>Peak booking hours</h2>
+            <p class="subtext">Hour of day, using the server's configured time zone.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Hour</th><th>Bookings</th></tr></thead>
+                    <tbody>
+                    {% for row in peak_hours %}
+                        <tr><td>{{ row.hour|stringformat:"02d" }}:00</td><td>{{ row.total }}</td></tr>
+                    {% empty %}
+                        <tr><td colspan="2" class="empty">No booking activity found.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="panel">
+            <h2>User growth</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Registration date</th><th>New users</th></tr></thead>
+                    <tbody>
+                    {% for row in user_growth %}
+                        <tr><td>{{ row.period|date:"d M Y" }}</td><td>{{ row.total }}</td></tr>
+                    {% empty %}
+                        <tr><td colspan="2" class="empty">No new registrations in this range.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </section>
+
+    <section class="panel">
+        <h2>Payment, cancellation and refund status</h2>
+        <p class="subtext">Status counts and amounts are grouped by the payment's last-updated timestamp. This is not a dedicated refund-event date.</p>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Payment status</th><th>Transactions</th><th>Payment amount total</th></tr></thead>
+                <tbody>
+                {% for row in payment_status_stats %}
+                    <tr><td>{{ row.status|title }}</td><td>{{ row.count }}</td><td>₹{{ row.amount|default_if_none:0|floatformat:2 }}</td></tr>
+                {% empty %}
+                    <tr><td colspan="3" class="empty">No payment status updates in this range.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <footer>
+        Reports are restricted to staff users with both booking-view and payment-view permissions.
+        Revenue is calculated from payments whose status is paid.
+    </footer>
+</main>
+</body>
+</html>

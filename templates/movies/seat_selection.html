@@ -1,0 +1,537 @@
+﻿﻿{% extends "users/basic.html" %} {% block content %}
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <!-- Movie and Theater Info -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div
+            class="d-flex justify-content-between align-items-center flex-wrap"
+          >
+            <div>
+              <h4 class="card-title">{{ theaters.movie.name }}</h4>
+              <p class="card-text text-muted">
+                {{ theaters.name }} | {{ theaters.time }}
+              </p>
+            </div>
+            <div class="mt-2 mt-sm-0">
+              <button class="btn btn-outline-primary me-2 mb-2 mb-sm-0">
+                2D
+              </button>
+              <button class="btn btn-outline-primary me-2 mb-2 mb-sm-0">
+                3D
+              </button>
+              <button class="btn btn-outline-primary mb-2 mb-sm-0">
+                IMAX 3D
+              </button>
+              <button class="btn btn-outline-primary mb-2 mb-sm-0">
+                {{seats|length}} Tickets
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- seat-selection-enhancement -->
+      {% if error %}
+      <div class="alert alert-danger" role="alert">{{ error }}</div>
+      {% endif %}
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }}" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title text-center mb-4">Select Your Seats</h5>
+          <div class="screen">All eyes this way please!</div>
+
+          <p id="seat-live-status" class="text-muted text-center" aria-live="polite">
+            Checking seat availability...
+          </p>
+
+          {% if user_reservations %}
+          <div id="reservation-alert" class="alert alert-warning text-center">
+            <strong>Your temporary reservation expires in:</strong>
+            <span id="reservation-countdown" data-expires-at="{{ reservation_expires_at|date:'c' }}">
+              {{ remaining_time_str|default:"02:00" }}
+            </span>
+            <p class="mb-2">Confirm your booking before the timer reaches zero.</p>
+            <div id="payment-checkout"
+     data-order-url="{% url 'create_payment_order' theaters.id %}"
+     data-confirm-url="{% url 'confirm_seat_booking' theaters.id %}" data-dismiss-url="{% url 'checkout_dismissed' theaters.id %}">
+  {% csrf_token %}
+  {% for seat in seats %}
+    {% if seat.seat_reservation and seat.seat_reservation.user_id == user.id %}
+      <input type="hidden" name="seats" value="{{ seat.id }}">
+    {% endif %}
+  {% endfor %}
+  <button type="button" id="start-payment-button" class="btn btn-success">
+    Proceed to Secure Payment
+  </button>
+  <p id="payment-status" class="mt-2 mb-0" role="status" aria-live="polite"></p>
+</div>
+          </div>
+          {% endif %}
+
+          <form method="POST" id="seat-selection-form">
+            {% csrf_token %}
+            <div class="d-flex justify-content-center flex-wrap mb-4">
+              {% for seat in seats %}
+              
+              <div
+                class="seat {% if seat.is_booked %}sold{% elif seat.seat_reservation %}reserved{% endif %}"
+                data-seat-id="{{ seat.id }}"
+                data-seat-number="{{ seat.seat_number }}"
+              >
+                {% if seat.is_booked %}
+                  {{ seat.seat_number }}
+                {% else %}
+                  <input
+                    type="checkbox"
+                    name="seats"
+                    value="{{ seat.id }}"
+                    class="d-none"
+                    id="seat-{{ seat.id }}"
+                    {% if seat.seat_reservation and seat.seat_reservation.user_id != user.id %}disabled{% endif %}
+                    {% if seat.seat_reservation and seat.seat_reservation.user_id == user.id %}checked{% endif %}
+                  />
+                  <label
+                    for="seat-{{ seat.id }}"
+                    class="w-100 h-100 d-flex align-items-center justify-content-center"
+                  >{{ seat.seat_number }}</label>
+                {% endif %}
+              </div>
+              
+              {% endfor %}
+            </div>
+
+            <div class="d-flex justify-content-center flex-wrap mb-4">
+              <div class="d-flex align-items-center me-4">
+                <div class="seat" style="background-color: white"></div>
+                <span class="ms-2">Available</span>
+              </div>
+              <div class="d-flex align-items-center me-4">
+                <div class="seat reserved"></div>
+                <span class="ms-2">Reserved</span>
+              </div>
+              <div class="d-flex align-items-center me-4">
+                <div class="seat selected"></div>
+                <span class="ms-2">Selected</span>
+              </div>
+              <div class="d-flex align-items-center">
+                <div class="seat sold"></div>
+                <span class="ms-2">Booked</span>
+              </div>
+            </div>
+<!-- Book Button -->
+            <div class="text-center">
+              <button type="submit" class="btn btn-success btn-lg">
+                Book Selected Seats
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+  .seat {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #28a745;
+    margin: 3px;
+    text-align: center;
+    line-height: 30px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  .seat:hover {
+    background-color: #28a745;
+    color: white;
+  }
+  .seat.selected {
+    background-color: #28a745;
+    color: white;
+  }
+  .seat.reserved {
+    background-color: #f0ad4e;
+    color: #212529;
+    border-color: #f0ad4e;
+    cursor: not-allowed;
+  }  .seat.sold {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  .screen {
+    margin: 20px 0;
+    background-color: #ccc;
+    height: 50px;
+    text-align: center;
+    line-height: 50px;
+    color: #666;
+  }
+  .footer {
+    background-color: #333;
+    color: #ccc;
+    padding: 20px 0;
+  }
+  .footer a {
+    color: #ccc;
+    text-decoration: none;
+  }
+  .footer a:hover {
+    text-decoration: underline;
+  }
+  .footer .col-md-2,
+  .footer .col-md-3 {
+    margin-bottom: 20px;
+  }
+  .footer .social-icons i {
+    font-size: 20px;
+    margin: 0 10px;
+  }
+</style>
+<!-- <h1>Seats for {{theater.name}} - {{theater.movie.name}}</h1>
+{% if error %}
+<p style="color:red;">{{error}}</p>
+{% endif %}
+<p id="seat-live-status" class="text-muted text-center" aria-live="polite">Checking seat availability...</p>
+          <form method="POST">
+    {% csrf_token %}
+    <ul>
+        {% for seat in seats %}
+        <li>
+          Seats{{seat.seat_number}}:
+          {% if seat.is_booked %}
+          <strong>Booked seat {{seat.seat_number}}</strong>
+          {% else %}
+          <input type="checkbox" name="seats" value="{{seat.id}}">
+          <strong>Available seat {{seat.seat_number}}</strong>
+          {% endif%}
+        </li>
+        {% endfor %}
+      </ul>
+      <button type="submit">Book selected seats</button>
+</form> -->
+
+<script>
+(function () {
+  const form = document.getElementById('seat-selection-form');
+  const checkboxes = form ? form.querySelectorAll('input[name="seats"]') : [];
+  const statusMessage = document.getElementById('seat-live-status');
+  const countdown = document.getElementById('reservation-countdown');
+
+  function updateSeatStyle(checkbox) {
+    const seat = checkbox.closest('.seat');
+    if (!seat) return;
+
+    seat.classList.toggle('selected', checkbox.checked && !checkbox.disabled);
+    seat.classList.toggle('sold', seat.dataset.state === 'booked');
+    seat.classList.toggle('reserved', seat.dataset.state === 'reserved');
+  }
+
+  checkboxes.forEach(function (checkbox) {
+    checkbox.addEventListener('change', function () {
+      updateSeatStyle(checkbox);
+    });
+    updateSeatStyle(checkbox);
+  });
+
+  function updateCountdown() {
+    if (!countdown) return;
+
+    const expiry = Date.parse(countdown.dataset.expiresAt);
+    if (!Number.isFinite(expiry)) {
+      countdown.textContent = 'Unavailable';
+      return;
+    }
+
+    const remaining = Math.max(0, Math.floor((expiry - Date.now()) / 1000));
+    const minutes = String(Math.floor(remaining / 60)).padStart(2, '0');
+    const seconds = String(remaining % 60).padStart(2, '0');
+    countdown.textContent = minutes + ':' + seconds;
+
+    if (remaining === 0) {
+      countdown.textContent = 'Expired';
+
+      const reservationAlert = document.getElementById('reservation-alert');
+      if (reservationAlert) {
+        reservationAlert.classList.remove('alert-warning');
+        reservationAlert.classList.add('alert-danger');
+        const confirmButton = reservationAlert.querySelector('button[type="submit"]');
+        if (confirmButton) confirmButton.disabled = true;
+      }
+
+      if (statusMessage) {
+        statusMessage.textContent =
+          'Your reservation expired. Refresh the page and select available seats again.';
+      }
+
+      // Ask the server for authoritative availability after expiry.
+      refreshAvailability();
+    }
+  }
+
+  async function refreshAvailability() {
+    try {
+      const response = await fetch(
+        "{% url 'seat_availability' theaters.id %}",
+        {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+          cache: 'no-store',
+          credentials: 'same-origin'
+        }
+      );
+
+      if (!response.ok) throw new Error('Availability request failed');
+
+      const data = await response.json();
+      const seatStates = new Map(
+        data.seats.map(function (seat) {
+          return [String(seat.id), seat];
+        })
+      );
+
+      checkboxes.forEach(function (checkbox) {
+        const state = seatStates.get(checkbox.value);
+        if (!state) return;
+
+        const seat = checkbox.closest('.seat');
+        if (!seat) return;
+
+        seat.dataset.state = state.status || (state.is_booked ? 'booked' : 'available');
+
+        if (state.status === 'booked' || state.is_booked) {
+          checkbox.checked = false;
+          checkbox.disabled = true;
+        } else if (state.status === 'reserved' && !state.is_reserved_by_current_user) {
+          checkbox.checked = false;
+          checkbox.disabled = true;
+        } else {
+          checkbox.disabled = false;
+        }
+
+        updateSeatStyle(checkbox);
+      });
+
+      if (statusMessage) {
+        statusMessage.textContent = 'Seat availability is up to date.';
+      }
+    } catch (error) {
+      if (statusMessage) {
+        statusMessage.textContent =
+          'Could not refresh availability. Please try again shortly.';
+      }
+    }
+  }
+
+  if (form) {
+    form.addEventListener('submit', function (event) {
+      const selected = Array.from(checkboxes).filter(function (checkbox) {
+        return checkbox.checked && !checkbox.disabled;
+      });
+
+      if (selected.length === 0) {
+        event.preventDefault();
+        if (statusMessage) {
+          statusMessage.textContent = 'Please select at least one available seat.';
+        }
+      }
+    });
+  }
+
+  updateCountdown();
+  window.setInterval(updateCountdown, 1000);
+  refreshAvailability();
+  window.setInterval(refreshAvailability, 5000);
+})();
+</script>
+
+<script>
+(function () {
+  const container = document.getElementById('payment-checkout');
+  const button = document.getElementById('start-payment-button');
+  const status = document.getElementById('payment-status');
+
+  if (!container || !button || !status) return;
+
+  function csrfToken() {
+    const input = container.querySelector('input[name="csrfmiddlewaretoken"]');
+    return input ? input.value : '';
+  }
+
+  function setStatus(message, isError) {
+    status.textContent = message;
+    status.className = 'mt-2 mb-0 ' + (isError ? 'text-danger' : 'text-muted');
+  }
+
+  function loadRazorpay() {
+    return new Promise(function (resolve, reject) {
+      if (window.Razorpay) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = resolve;
+      script.onerror = function () {
+        reject(new Error('Could not load the secure payment checkout.'));
+      };
+      document.head.appendChild(script);
+    });
+  }
+
+  button.addEventListener('click', async function () {
+    const seats = Array.from(
+      container.querySelectorAll('input[name="seats"]')
+    ).map(function (input) {
+      return input.value;
+    });
+
+    if (!seats.length) {
+      setStatus('Your seat reservation was not found. Refresh and select seats again.', true);
+      return;
+    }
+
+    button.disabled = true;
+    setStatus('Preparing your secure payment...', false);
+
+    try {
+      const csrf = csrfToken();
+      if (!csrf) throw new Error('Security token missing. Refresh the page and try again.');
+
+      const orderBody = new URLSearchParams();
+      seats.forEach(function (seat) {
+        orderBody.append('seats', seat);
+      });
+
+      const orderResponse = await fetch(container.dataset.orderUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'X-CSRFToken': csrf,
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'Accept': 'application/json'
+        },
+        body: orderBody.toString()
+      });
+
+      const order = await orderResponse.json();
+      if (!orderResponse.ok) {
+        throw new Error(order.error || 'Could not create the payment order.');
+      }
+
+      // Keep the browser countdown synchronized with the server's payment window.
+      const reservationCountdown = document.getElementById('reservation-countdown');
+      if (reservationCountdown && order.reservation_expires_at) {
+        reservationCountdown.dataset.expiresAt = order.reservation_expires_at;
+      }
+
+      await loadRazorpay();
+
+      const checkout = new Razorpay({
+        key: order.key_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'BookMyShow',
+        description: order.ticket_count + ' movie ticket(s)',
+        order_id: order.order_id,
+        handler: async function (response) {
+          setStatus('Verifying your payment with the server...', false);
+
+          try {
+            const confirmationBody = new URLSearchParams();
+            confirmationBody.append('razorpay_order_id', response.razorpay_order_id);
+            confirmationBody.append('razorpay_payment_id', response.razorpay_payment_id);
+            confirmationBody.append('razorpay_signature', response.razorpay_signature);
+
+            const confirmation = await fetch(container.dataset.confirmUrl, {
+              method: 'POST',
+              credentials: 'same-origin',
+              headers: {
+                'X-CSRFToken': csrf,
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                'Accept': 'application/json'
+              },
+              body: confirmationBody.toString()
+            });
+
+            const result = await confirmation.json();
+
+            if (!confirmation.ok || !result.success) {
+              throw new Error(result.error || 'Payment could not be confirmed. Please contact support before retrying.');
+            }
+
+            setStatus('Payment verified and booking confirmed. Refreshing...', false);
+            window.location.reload();
+          } catch (error) {
+            setStatus(error.message || 'Could not verify payment. Do not pay again until you check your booking history.', true);
+            button.disabled = false;
+          }
+        },
+        modal: {
+          ondismiss: async function () {
+            // Record dismissal for audit purposes; never treat it as payment failure.
+            try {
+              const dismissalBody = new URLSearchParams();
+              dismissalBody.append('razorpay_order_id', order.order_id);
+
+              const dismissalResponse = await fetch(container.dataset.dismissUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                  'X-CSRFToken': csrf,
+                  'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                  'Accept': 'application/json'
+                },
+                body: dismissalBody.toString(),
+                keepalive: true
+              });
+
+              if (!dismissalResponse.ok) {
+                console.warn('Checkout dismissal could not be recorded by the server.');
+              }
+            } catch (error) {
+              console.warn('Checkout dismissal notification failed.', error);
+            }
+
+            setStatus('Checkout closed. Your booking is not confirmed. You may retry while your reservation remains active.', true);
+            button.disabled = false;
+          }
+        },
+        theme: {
+          color: '#28a745'
+        }
+      });
+
+      checkout.on('payment.failed', function () {
+        setStatus('Payment failed. Your booking is not confirmed. You can retry while your reservation remains active.', true);
+        button.disabled = false;
+      });
+
+      checkout.open();
+    } catch (error) {
+      setStatus(error.message || 'Could not start payment. Please try again.', true);
+      button.disabled = false;
+    }
+  });
+})();
+</script>
+{% endblock %}
+
+
+
+
+
+
+

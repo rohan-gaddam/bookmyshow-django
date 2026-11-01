@@ -1,0 +1,1024 @@
+[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$260000$89uyMnUtaP1Torkw9tOFWR$uefBIeuJ4YDSvdkKT28YmXzsFV5iTEtxQL/82YThH8I=",
+    "last_login": "2026-10-24T10:02:40.845Z",
+    "is_superuser": true,
+    "username": "girish",
+    "first_name": "",
+    "last_name": "",
+    "email": "girishmaharana42@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2024-10-23T21:20:20.689Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$260000$SPbtGKBcI7UDIGTnhKTfH0$CXA0geNzyvhx+BdaT0rjOLqv1lPPQkjcbSgXBzBxLk0=",
+    "last_login": "2026-10-25T10:07:03.876Z",
+    "is_superuser": true,
+    "username": "Rohan",
+    "first_name": "",
+    "last_name": "",
+    "email": "strangeunknown03@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-10-23T07:30:03.519Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$260000$kGGWhFNrB5BXztqzDztODg$kgq3nrDPc8MkwFfx8TRqNB/4gOW5+vb90Znwe69S3nc=",
+    "last_login": "2026-10-27T14:41:58.937Z",
+    "is_superuser": false,
+    "username": "smoke_user",
+    "first_name": "",
+    "last_name": "",
+    "email": "smoke@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-27T14:41:57.702Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$260000$mkVgw3APM9uRe4S2BFYqjN$DOBj+/5qYKZJmZsuVuDWxNeRKR8y0FyW+mn9CVtgogE=",
+    "last_login": "2026-10-27T14:41:58.731Z",
+    "is_superuser": false,
+    "username": "smoke_other",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-10-27T14:41:58.347Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "0flt4xzbasatwia45jutay7x2daozlcn",
+  "fields": {
+    "session_data": ".eJxVjDsOwyAQBe9CHaFdm2_K9D4DggWCkwhLxq6i3D1YcpG0b2bemzm_b8XtLa1ujuzKBnb53YKnZ6oHiA9f7wunpW7rHPih8JM2Pi0xvW6n-3dQfCu9NmMQWWpEAswZFHgERQoQgtQhdQTBGhQg0CpjSeWBhJZA2oqxB-zzBbmlNqk:1xKDHu:xRTW-6PZar1aUXPNog9HtYdnS-NVoPd1P1nDxzBsmKo",
+    "expire_date": "2026-11-06T11:18:18.073Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "18lszze0s2tmyd04pczhx0goeqi49116",
+  "fields": {
+    "session_data": ".eJxVzEEOgjAUBNC7dG0aKE3_4NK9Z2j6-4ugpk0orIh3FxIWup15M5vyYV1Gv9Y0-0nUVbXq8ptxiK-Uj0KeIT-KjiUv88T6IPpsq74XSe_baf8OxlDHfd3xAB4CBiFjyUiCNJ0jQ2w7ASNEAsiJax3FBoBFf5AekH436vMF5_03TA:1t5kL1:ijKkEmUxa6v0QY4z5TnLd0loFi8I7RTysZ3dEbKGfAo",
+    "expire_date": "2024-11-12T11:24:39.757Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "brv65q23qzhmb1bsf283baoftpv3pv0p",
+  "fields": {
+    "session_data": ".eJxVjMsOwiAQRf-FtSG8EZfu-w1kYAapGkhKuzL-uzbpQrf3nHNfLMK21rgNWuKM7MIsO_1uCfKD2g7wDu3Wee5tXebEd4UfdPCpIz2vh_t3UGHUby29RxDFOUNnlxUoCYg5FUlKuJJSkMJQ9iaQ9EYrb0UwOhTU1gUJxrH3B-umN3U:1xLiNC:651_QNcC6hF-1PUpoKzXYderkno6VSRURfB2xshLCG4",
+    "expire_date": "2026-11-10T14:41:58.944Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "cc8zcrs355m8f1jup32u674uewbw1e6e",
+  "fields": {
+    "session_data": "eyJyZWNlbnRseV92aWV3ZWQiOlsxXX0:1xLhSX:0eagWwAojgAtdGU_WYatZlfsldzPseH7YpbkrUY9o_U",
+    "expire_date": "2026-11-10T13:43:25.593Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "cm63f0014yr0grbf87r3p56vmm99tpwv",
+  "fields": {
+    "session_data": ".eJxVjs0KwjAQhN8l5xKyiW1Sj959ApGw2d3aqqTQH0XEd7eFHvQ638zHvFXEeWrjPMoQO1Z7Bar4zRLSTfIK-Ir50mvq8zR0Sa8VvdFRH3uW-2Hr_glaHNtl3ZRezM5UwTepSkkwuBKMcRWAty5gDY5rSwYbIcvEtSQgYR9KAiDrF-kgJHm6v-Kjk6csl062gMKdP1_-sECM:1xLhr4:weqsXsZHdDl5l-_zkySWB3fDDmut-_1nYMXpnR2C8aI",
+    "expire_date": "2026-11-10T14:08:46.506Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "fskp3ful7r4t0v34o6481wov6odq7lgj",
+  "fields": {
+    "session_data": ".eJxVjDsOwyAQBe9CHaFdm2_K9D4DggWCkwhLxq6i3D1YcpG0b2bemzm_b8XtLa1ujuzKBnb53YKnZ6oHiA9f7wunpW7rHPih8JM2Pi0xvW6n-3dQfCu9NmMQWWpEAswZFHgERQoQgtQhdQTBGhQg0CpjSeWBhJZA2oqxB-zzBbmlNqk:1xKv83:_IyrR7tFJIRuVfNMmHYQ0YnhfHIimQg1MIBIxAWdX7k",
+    "expire_date": "2026-11-08T10:07:03.889Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "kagbb0e2idst7tzu2q2ie90r5wvnrdwm",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2hAGbAGX7nsGMsxMbdVAUtqV8e7apAvd_vfef6mE2zqlrcmSZlYXBer0u2Wkh5Qd8B3LrWqqZV3mrHdFH7TpobI8r4f7dzBhm7712HkxZ9MHP-Y-Z8HgOjDG9QDeuoARHEdLBkchy8RRMpCwDx0BkPXq_QHXdjfz:1xKYaG:iRtKwHidYy8ONNfWWjjrfgCrI1MVaxQjAXWP_cBSkAI",
+    "expire_date": "2026-11-07T10:02:40.854Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "p8hzyav720n5goi3q3ktmypv95m0sgkq",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGln-yl5Kes5gbexdHECOFCdVxN1JpBTQvpk3m0i4LjWtneY0FnEVTlx-twHzi9oByhPbY5J5ass8DvJQ5Em7vE-F3rfT_QtU7HV_K29t8AUhEGcEANY5esWBOYLTGg2HsueyNQBkvLbOeIKoVFYUjBWfL-RBN4Y:1xLiM3:gkYFSZyRofUhaKB0jADvFtVCJXAwiq89xPrxFhVeFuE",
+    "expire_date": "2026-11-10T14:40:47.827Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "ungcb9yex75bf1mzbh1ynk11hxd8up3l",
+  "fields": {
+    "session_data": ".eJxVzEEOgjAUBNC7dG0aKE3_4NK9Z2j6-4ugpk0orIh3FxIWup15M5vyYV1Gv9Y0-0nUVbXq8ptxiK-Uj0KeIT-KjiUv88T6IPpsq74XSe_baf8OxlDHfd3xAB4CBiFjyUiCNJ0jQ2w7ASNEAsiJax3FBoBFf5AekH436vMF5_03TA:1t5ruL:wU5Lw3N3hYLsBh7ntssyZlFIwOQmGEoXFQZJ_n6JeCk",
+    "expire_date": "2024-11-12T19:29:37.831Z"
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 1,
+  "fields": {
+    "name": "avengers",
+    "image": "movies/635217f73e372771013edb4c-the-avengers-poster-marvel-movie-canvas1.jpg",
+    "rating": "8.9",
+    "cast": "rdj,steve,chris",
+    "description": "Earth's mightiest heroes must come together and learn to fight as a team if they are going to stop the mischievous Loki and his alien army from enslaving ...",
+    "trailer_url": "https://www.youtube.com/watch?v=TcMBFSGVi1c",
+    "age_certification": "",
+    "duration_minutes": null,
+    "release_date": null,
+    "genres": [
+      1
+    ],
+    "languages": [
+      1
+    ],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 2,
+  "fields": {
+    "name": "movie1",
+    "image": "movies/download.jpeg",
+    "rating": "6.7",
+    "cast": "dve rg erg rge ger",
+    "description": "erg erg erge ger geg",
+    "trailer_url": null,
+    "age_certification": "",
+    "duration_minutes": null,
+    "release_date": null,
+    "genres": [
+      1
+    ],
+    "languages": [
+      1
+    ],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 3,
+  "fields": {
+    "name": "movie 3",
+    "image": "movies/f5VK0h2bprRhR6iRrixcuEfRxSUF4l14F66vQYrsJGmKZ5nTA1.jpg",
+    "rating": "5.6",
+    "cast": "efwefwef",
+    "description": "wefwefwef",
+    "trailer_url": null,
+    "age_certification": "UA 13+",
+    "duration_minutes": 150,
+    "release_date": "2026-11-12",
+    "genres": [
+      2
+    ],
+    "languages": [
+      2
+    ],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 4,
+  "fields": {
+    "name": "movie4",
+    "image": "movies/feUv2SYumXlT8E2RhzlYbZxfEGLG5AVrCPxP1gmAaCusxyPnA1.jpg",
+    "rating": "6.3",
+    "cast": "adcwefwe",
+    "description": "fwefwefewfwe",
+    "trailer_url": null,
+    "age_certification": "",
+    "duration_minutes": null,
+    "release_date": null,
+    "genres": [],
+    "languages": [],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 5,
+  "fields": {
+    "name": "ergeg",
+    "image": "movies/IQsBhg9t747dLhjXfsChIGZy4XfugER8BF0Gw5MDhIcnY5nTA1.jpg",
+    "rating": "9.9",
+    "cast": "tujtyjyh",
+    "description": "trhrthrthjr",
+    "trailer_url": null,
+    "age_certification": "",
+    "duration_minutes": null,
+    "release_date": "2026-10-20",
+    "genres": [],
+    "languages": [],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 6,
+  "fields": {
+    "name": "Smoke Test Movie",
+    "image": "movies/smoke.jpg",
+    "rating": "8.0",
+    "cast": "Test Cast",
+    "description": "Smoke test",
+    "trailer_url": null,
+    "age_certification": "",
+    "duration_minutes": null,
+    "release_date": null,
+    "genres": [],
+    "languages": [],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 7,
+  "fields": {
+    "name": "Smoke Test Movie",
+    "image": "movies/smoke.jpg",
+    "rating": "8.0",
+    "cast": "Test Cast",
+    "description": "Smoke test",
+    "trailer_url": null,
+    "age_certification": "",
+    "duration_minutes": null,
+    "release_date": null,
+    "genres": [],
+    "languages": [],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.theater",
+  "pk": 1,
+  "fields": {
+    "name": "rdj",
+    "city": null,
+    "movie": 1,
+    "time": "2024-10-31T21:09:53Z"
+  }
+},
+{
+  "model": "movies.theater",
+  "pk": 2,
+  "fields": {
+    "name": "hjukuyku",
+    "city": null,
+    "movie": 2,
+    "time": "2024-10-23T06:00:00Z"
+  }
+},
+{
+  "model": "movies.theater",
+  "pk": 3,
+  "fields": {
+    "name": "faea",
+    "city": null,
+    "movie": 3,
+    "time": "2024-10-21T12:00:00Z"
+  }
+},
+{
+  "model": "movies.theater",
+  "pk": 4,
+  "fields": {
+    "name": "Smoke Theater",
+    "city": null,
+    "movie": 6,
+    "time": "2026-10-28T14:40:47.002Z"
+  }
+},
+{
+  "model": "movies.theater",
+  "pk": 5,
+  "fields": {
+    "name": "Smoke Theater",
+    "city": null,
+    "movie": 7,
+    "time": "2026-10-28T14:41:57.897Z"
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 1,
+  "fields": {
+    "theater": 1,
+    "seat_number": "a1",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 2,
+  "fields": {
+    "theater": 1,
+    "seat_number": "a2",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 3,
+  "fields": {
+    "theater": 2,
+    "seat_number": "a1",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 4,
+  "fields": {
+    "theater": 1,
+    "seat_number": "a2",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 5,
+  "fields": {
+    "theater": 3,
+    "seat_number": "a1",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 6,
+  "fields": {
+    "theater": 3,
+    "seat_number": "a2",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 7,
+  "fields": {
+    "theater": 1,
+    "seat_number": "a3",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 8,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A1",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 9,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A2",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 10,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A3",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 11,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A4",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 12,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A5",
+    "is_booked": false
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 13,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A6",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 14,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A7",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 15,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A8",
+    "is_booked": false
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 16,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A9",
+    "is_booked": false
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 17,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A10",
+    "is_booked": false
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 18,
+  "fields": {
+    "theater": 4,
+    "seat_number": "S1",
+    "is_booked": false
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 19,
+  "fields": {
+    "theater": 5,
+    "seat_number": "S1",
+    "is_booked": false
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "seat": 1,
+    "movie": 1,
+    "theater": 1,
+    "booked_at": "2024-10-28T18:35:36.619Z",
+    "attended": false
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "seat": 2,
+    "movie": 1,
+    "theater": 1,
+    "booked_at": "2024-10-28T18:41:08.168Z",
+    "attended": true
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "seat": 3,
+    "movie": 2,
+    "theater": 2,
+    "booked_at": "2024-10-30T17:57:13.979Z",
+    "attended": false
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "seat": 5,
+    "movie": 3,
+    "theater": 3,
+    "booked_at": "2024-10-30T17:57:34.075Z",
+    "attended": false
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "seat": 6,
+    "movie": 3,
+    "theater": 3,
+    "booked_at": "2024-10-30T17:57:34.094Z",
+    "attended": false
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "Rohan"
+    ],
+    "seat": 4,
+    "movie": 1,
+    "theater": 1,
+    "booked_at": "2026-10-23T07:41:47.116Z",
+    "attended": false
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "Rohan"
+    ],
+    "seat": 7,
+    "movie": 1,
+    "theater": 1,
+    "booked_at": "2026-10-23T07:48:31.112Z",
+    "attended": true
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "seat": 8,
+    "movie": 3,
+    "theater": 3,
+    "booked_at": "2026-10-24T10:02:59.409Z",
+    "attended": false
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "seat": 9,
+    "movie": 3,
+    "theater": 3,
+    "booked_at": "2026-10-24T13:12:08.820Z",
+    "attended": false
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 10,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "seat": 10,
+    "movie": 3,
+    "theater": 3,
+    "booked_at": "2026-10-24T13:14:54.784Z",
+    "attended": false
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 11,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "seat": 11,
+    "movie": 3,
+    "theater": 3,
+    "booked_at": "2026-10-24T13:14:54.785Z",
+    "attended": true
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 12,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "seat": 13,
+    "movie": 3,
+    "theater": 3,
+    "booked_at": "2026-10-25T14:28:49.762Z",
+    "attended": false
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 13,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "seat": 14,
+    "movie": 3,
+    "theater": 3,
+    "booked_at": "2026-10-25T16:28:01.185Z",
+    "attended": false
+  }
+},
+{
+  "model": "movies.booking",
+  "pk": 15,
+  "fields": {
+    "user": [
+      "smoke_user"
+    ],
+    "seat": 19,
+    "movie": 7,
+    "theater": 5,
+    "booked_at": "2026-10-27T14:41:57.920Z",
+    "attended": true
+  }
+},
+{
+  "model": "movies.genre",
+  "pk": 1,
+  "fields": {
+    "name": "Action"
+  }
+},
+{
+  "model": "movies.genre",
+  "pk": 2,
+  "fields": {
+    "name": "Comedy"
+  }
+},
+{
+  "model": "movies.language",
+  "pk": 1,
+  "fields": {
+    "name": "English"
+  }
+},
+{
+  "model": "movies.language",
+  "pk": 2,
+  "fields": {
+    "name": "Spanish"
+  }
+},
+{
+  "model": "movies.movieposter",
+  "pk": 1,
+  "fields": {
+    "movie": 1,
+    "image": "movies/posters/Avengers.jpg",
+    "alt_text": "Movie Poster",
+    "is_primary": true,
+    "uploaded_at": "2026-10-24T10:24:03.905Z"
+  }
+},
+{
+  "model": "movies.movieposter",
+  "pk": 2,
+  "fields": {
+    "movie": 1,
+    "image": "movies/posters/Avengers1.jpg",
+    "alt_text": "Movie Poster",
+    "is_primary": false,
+    "uploaded_at": "2026-10-24T10:28:11.850Z"
+  }
+},
+{
+  "model": "movies.review",
+  "pk": 2,
+  "fields": {
+    "movie": 1,
+    "user": [
+      "Rohan"
+    ],
+    "rating": 4,
+    "comment": "Excellent",
+    "created_at": "2026-10-24T09:10:39.580Z"
+  }
+},
+{
+  "model": "movies.review",
+  "pk": 3,
+  "fields": {
+    "movie": 1,
+    "user": [
+      "girish"
+    ],
+    "rating": 5,
+    "comment": "Descent",
+    "created_at": "2026-10-24T11:25:29.019Z"
+  }
+},
+{
+  "model": "movies.review",
+  "pk": 4,
+  "fields": {
+    "movie": 3,
+    "user": [
+      "girish"
+    ],
+    "rating": 5,
+    "comment": "Nice Comedy",
+    "created_at": "2026-10-24T13:22:51.492Z"
+  }
+},
+{
+  "model": "movies.reviewreport",
+  "pk": 1,
+  "fields": {
+    "review": 2,
+    "user": [
+      "girish"
+    ],
+    "reason": "spam",
+    "explanation": "Spam",
+    "created_at": "2026-10-24T09:24:22.471Z",
+    "status": "reviewed"
+  }
+},
+{
+  "model": "movies.payment",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "theater": 3,
+    "seat_ids": [
+      13
+    ],
+    "amount": "200.00",
+    "currency": "INR",
+    "status": "refunded",
+    "razorpay_order_id": "order_TsAURxHHIDzVAB",
+    "razorpay_payment_id": "pay_TsAc6i6pSHov76",
+    "failure_reason": "Payment captured, but reservations expired or seats became unavailable. Refund or manual reconciliation required.",
+    "created_at": "2026-10-25T14:06:59.246Z",
+    "updated_at": "2026-10-25T14:14:38.334Z",
+    "paid_at": "2026-10-25T14:14:38.315Z",
+    "checkout_dismissed_at": null
+  }
+},
+{
+  "model": "movies.payment",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "theater": 3,
+    "seat_ids": [
+      13
+    ],
+    "amount": "200.00",
+    "currency": "INR",
+    "status": "pending",
+    "razorpay_order_id": "order_TsAdUemI4dvhcF",
+    "razorpay_payment_id": null,
+    "failure_reason": "",
+    "created_at": "2026-10-25T14:15:34.465Z",
+    "updated_at": "2026-10-25T14:15:35.023Z",
+    "paid_at": null,
+    "checkout_dismissed_at": null
+  }
+},
+{
+  "model": "movies.payment",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "theater": 3,
+    "seat_ids": [
+      13
+    ],
+    "amount": "200.00",
+    "currency": "INR",
+    "status": "paid",
+    "razorpay_order_id": "order_TsAr39BSB9gbQP",
+    "razorpay_payment_id": "pay_TsArC9qBIh8hQ6",
+    "failure_reason": "",
+    "created_at": "2026-10-25T14:28:24.339Z",
+    "updated_at": "2026-10-25T14:28:49.763Z",
+    "paid_at": "2026-10-25T14:28:49.752Z",
+    "checkout_dismissed_at": null
+  }
+},
+{
+  "model": "movies.payment",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "theater": 3,
+    "seat_ids": [
+      14
+    ],
+    "amount": "200.00",
+    "currency": "INR",
+    "status": "pending",
+    "razorpay_order_id": "order_TsAu9O0llVj3my",
+    "razorpay_payment_id": null,
+    "failure_reason": "",
+    "created_at": "2026-10-25T14:31:19.607Z",
+    "updated_at": "2026-10-25T14:31:21.175Z",
+    "paid_at": null,
+    "checkout_dismissed_at": null
+  }
+},
+{
+  "model": "movies.payment",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "girish"
+    ],
+    "theater": 3,
+    "seat_ids": [
+      14
+    ],
+    "amount": "200.00",
+    "currency": "INR",
+    "status": "paid",
+    "razorpay_order_id": "order_TsCshLy5jULzhL",
+    "razorpay_payment_id": "pay_TsCt4C6LnbDYvj",
+    "failure_reason": "",
+    "created_at": "2026-10-25T16:27:17.804Z",
+    "updated_at": "2026-10-25T16:28:01.191Z",
+    "paid_at": "2026-10-25T16:28:01.158Z",
+    "checkout_dismissed_at": null
+  }
+},
+{
+  "model": "movies.payment",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "smoke_user"
+    ],
+    "theater": 5,
+    "seat_ids": [
+      19
+    ],
+    "amount": "200.00",
+    "currency": "INR",
+    "status": "paid",
+    "razorpay_order_id": "order_smoke",
+    "razorpay_payment_id": "pay_smoke",
+    "failure_reason": "",
+    "created_at": "2026-10-27T14:41:57.912Z",
+    "updated_at": "2026-10-27T14:41:57.912Z",
+    "paid_at": "2026-10-27T14:41:57.911Z",
+    "checkout_dismissed_at": null
+  }
+},
+{
+  "model": "movies.paymentattempt",
+  "pk": 1,
+  "fields": {
+    "payment": 1,
+    "razorpay_payment_id": "pay_TsAc6i6pSHov76",
+    "amount": "200.00",
+    "currency": "INR",
+    "status": "captured",
+    "failure_reason": "",
+    "created_at": "2026-10-25T14:06:59.253Z",
+    "updated_at": "2026-10-25T14:14:38.319Z"
+  }
+},
+{
+  "model": "movies.paymentattempt",
+  "pk": 2,
+  "fields": {
+    "payment": 2,
+    "razorpay_payment_id": null,
+    "amount": "200.00",
+    "currency": "INR",
+    "status": "pending",
+    "failure_reason": "",
+    "created_at": "2026-10-25T14:15:34.471Z",
+    "updated_at": "2026-10-25T14:15:34.472Z"
+  }
+},
+{
+  "model": "movies.paymentattempt",
+  "pk": 3,
+  "fields": {
+    "payment": 3,
+    "razorpay_payment_id": "pay_TsArC9qBIh8hQ6",
+    "amount": "200.00",
+    "currency": "INR",
+    "status": "captured",
+    "failure_reason": "",
+    "created_at": "2026-10-25T14:28:24.339Z",
+    "updated_at": "2026-10-25T14:28:49.756Z"
+  }
+},
+{
+  "model": "movies.paymentattempt",
+  "pk": 4,
+  "fields": {
+    "payment": 4,
+    "razorpay_payment_id": null,
+    "amount": "200.00",
+    "currency": "INR",
+    "status": "pending",
+    "failure_reason": "",
+    "created_at": "2026-10-25T14:31:19.607Z",
+    "updated_at": "2026-10-25T14:31:19.607Z"
+  }
+},
+{
+  "model": "movies.paymentattempt",
+  "pk": 5,
+  "fields": {
+    "payment": 5,
+    "razorpay_payment_id": "pay_TsCt4C6LnbDYvj",
+    "amount": "200.00",
+    "currency": "INR",
+    "status": "captured",
+    "failure_reason": "",
+    "created_at": "2026-10-25T16:27:17.806Z",
+    "updated_at": "2026-10-25T16:28:01.165Z"
+  }
+},
+{
+  "model": "movies.ticket",
+  "pk": 2,
+  "fields": {
+    "booking": 15,
+    "verification_token": "smoke_token_xyz",
+    "pdf_file": "tickets/15/smoke.pdf",
+    "status": "pending",
+    "generated_at": null,
+    "email_sent": false,
+    "email_attempts": 0,
+    "last_email_error": "",
+    "created_at": "2026-10-27T14:41:57.927Z",
+    "updated_at": "2026-10-27T14:41:57.937Z"
+  }
+}
+]

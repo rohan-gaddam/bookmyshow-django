@@ -1,0 +1,411 @@
+[
+{
+  "model": "movies.genre",
+  "pk": 1,
+  "fields": {
+    "name": "Action"
+  }
+},
+{
+  "model": "movies.genre",
+  "pk": 2,
+  "fields": {
+    "name": "Comedy"
+  }
+},
+{
+  "model": "movies.language",
+  "pk": 1,
+  "fields": {
+    "name": "English"
+  }
+},
+{
+  "model": "movies.language",
+  "pk": 2,
+  "fields": {
+    "name": "Spanish"
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 1,
+  "fields": {
+    "name": "avengers",
+    "image": "movies/635217f73e372771013edb4c-the-avengers-poster-marvel-movie-canvas1.jpg",
+    "rating": "8.9",
+    "cast": "rdj,steve,chris",
+    "description": "Earth's mightiest heroes must come together and learn to fight as a team if they are going to stop the mischievous Loki and his alien army from enslaving ...",
+    "trailer_url": "https://www.youtube.com/watch?v=TcMBFSGVi1c",
+    "age_certification": "",
+    "duration_minutes": null,
+    "release_date": null,
+    "genres": [
+      1
+    ],
+    "languages": [
+      1
+    ],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 2,
+  "fields": {
+    "name": "movie1",
+    "image": "movies/download.jpeg",
+    "rating": "6.7",
+    "cast": "dve rg erg rge ger",
+    "description": "erg erg erge ger geg",
+    "trailer_url": null,
+    "age_certification": "",
+    "duration_minutes": null,
+    "release_date": null,
+    "genres": [
+      1
+    ],
+    "languages": [
+      1
+    ],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 3,
+  "fields": {
+    "name": "movie 3",
+    "image": "movies/f5VK0h2bprRhR6iRrixcuEfRxSUF4l14F66vQYrsJGmKZ5nTA1.jpg",
+    "rating": "5.6",
+    "cast": "efwefwef",
+    "description": "wefwefwef",
+    "trailer_url": null,
+    "age_certification": "UA 13+",
+    "duration_minutes": 150,
+    "release_date": "2026-11-12",
+    "genres": [
+      2
+    ],
+    "languages": [
+      2
+    ],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 4,
+  "fields": {
+    "name": "movie4",
+    "image": "movies/feUv2SYumXlT8E2RhzlYbZxfEGLG5AVrCPxP1gmAaCusxyPnA1.jpg",
+    "rating": "6.3",
+    "cast": "adcwefwe",
+    "description": "fwefwefewfwe",
+    "trailer_url": null,
+    "age_certification": "",
+    "duration_minutes": null,
+    "release_date": null,
+    "genres": [],
+    "languages": [],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 5,
+  "fields": {
+    "name": "ergeg",
+    "image": "movies/IQsBhg9t747dLhjXfsChIGZy4XfugER8BF0Gw5MDhIcnY5nTA1.jpg",
+    "rating": "9.9",
+    "cast": "tujtyjyh",
+    "description": "trhrthrthjr",
+    "trailer_url": null,
+    "age_certification": "",
+    "duration_minutes": null,
+    "release_date": "2026-10-20",
+    "genres": [],
+    "languages": [],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 6,
+  "fields": {
+    "name": "Smoke Test Movie",
+    "image": "movies/smoke.jpg",
+    "rating": "8.0",
+    "cast": "Test Cast",
+    "description": "Smoke test",
+    "trailer_url": null,
+    "age_certification": "",
+    "duration_minutes": null,
+    "release_date": null,
+    "genres": [],
+    "languages": [],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.movie",
+  "pk": 7,
+  "fields": {
+    "name": "Smoke Test Movie",
+    "image": "movies/smoke.jpg",
+    "rating": "8.0",
+    "cast": "Test Cast",
+    "description": "Smoke test",
+    "trailer_url": null,
+    "age_certification": "",
+    "duration_minutes": null,
+    "release_date": null,
+    "genres": [],
+    "languages": [],
+    "cast_members": []
+  }
+},
+{
+  "model": "movies.theater",
+  "pk": 1,
+  "fields": {
+    "name": "rdj",
+    "city": null,
+    "movie": 1,
+    "time": "2024-10-31T21:09:53Z"
+  }
+},
+{
+  "model": "movies.theater",
+  "pk": 2,
+  "fields": {
+    "name": "hjukuyku",
+    "city": null,
+    "movie": 2,
+    "time": "2024-10-23T06:00:00Z"
+  }
+},
+{
+  "model": "movies.theater",
+  "pk": 3,
+  "fields": {
+    "name": "faea",
+    "city": null,
+    "movie": 3,
+    "time": "2024-10-21T12:00:00Z"
+  }
+},
+{
+  "model": "movies.theater",
+  "pk": 4,
+  "fields": {
+    "name": "Smoke Theater",
+    "city": null,
+    "movie": 6,
+    "time": "2026-10-28T14:40:47.002Z"
+  }
+},
+{
+  "model": "movies.theater",
+  "pk": 5,
+  "fields": {
+    "name": "Smoke Theater",
+    "city": null,
+    "movie": 7,
+    "time": "2026-10-28T14:41:57.897Z"
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 1,
+  "fields": {
+    "theater": 1,
+    "seat_number": "a1",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 2,
+  "fields": {
+    "theater": 1,
+    "seat_number": "a2",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 3,
+  "fields": {
+    "theater": 2,
+    "seat_number": "a1",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 4,
+  "fields": {
+    "theater": 1,
+    "seat_number": "a2",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 5,
+  "fields": {
+    "theater": 3,
+    "seat_number": "a1",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 6,
+  "fields": {
+    "theater": 3,
+    "seat_number": "a2",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 7,
+  "fields": {
+    "theater": 1,
+    "seat_number": "a3",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 8,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A1",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 9,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A2",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 10,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A3",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 11,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A4",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 12,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A5",
+    "is_booked": false
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 13,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A6",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 14,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A7",
+    "is_booked": true
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 15,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A8",
+    "is_booked": false
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 16,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A9",
+    "is_booked": false
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 17,
+  "fields": {
+    "theater": 3,
+    "seat_number": "A10",
+    "is_booked": false
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 18,
+  "fields": {
+    "theater": 4,
+    "seat_number": "S1",
+    "is_booked": false
+  }
+},
+{
+  "model": "movies.seat",
+  "pk": 19,
+  "fields": {
+    "theater": 5,
+    "seat_number": "S1",
+    "is_booked": false
+  }
+},
+{
+  "model": "movies.movieposter",
+  "pk": 1,
+  "fields": {
+    "movie": 1,
+    "image": "movies/posters/Avengers.jpg",
+    "alt_text": "Movie Poster",
+    "is_primary": true,
+    "uploaded_at": "2026-10-24T10:24:03.905Z"
+  }
+},
+{
+  "model": "movies.movieposter",
+  "pk": 2,
+  "fields": {
+    "movie": 1,
+    "image": "movies/posters/Avengers1.jpg",
+    "alt_text": "Movie Poster",
+    "is_primary": false,
+    "uploaded_at": "2026-10-24T10:28:11.850Z"
+  }
+}
+]

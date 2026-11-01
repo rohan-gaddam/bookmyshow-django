@@ -1,0 +1,19 @@
+Booking Confirmed - {{ movie.name }}
+
+Hello {{ user.username }},
+
+Your booking has been confirmed and your ticket PDF is attached to this email.
+
+Booking Details:
+- Movie: {{ movie.name }}
+- Theater: {{ theater.name }}
+- Show: {{ theater.time|date:"l, d M Y" }}
+- Time: {{ theater.time|date:"g:i A" }}
+- Seat: {{ seat.seat_number }}
+- Booking ID: {{ booking.id }}
+{% if payment %}- Payment: {{ payment.razorpay_payment_id|default:payment.razorpay_order_id }}{% endif %}
+
+Please present the attached PDF ticket at the theater entrance.
+Thank you for booking with BookMySeat!
+
+© 2024 BookMySeat. All rights reserved.

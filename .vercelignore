@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+db.sqlite3
+db.sqlite3-*
+deployment_backups/
+.git/
+/media/
+# Re-include public/media/ so deployed movie poster images are served
+!public/media/
+/staticfiles/

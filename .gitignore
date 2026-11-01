@@ -1,0 +1,58 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Local databases
+db.sqlite3
+db.sqlite3-*
+*.sqlite3
+*.sqlite3-*
+
+# User uploads and generated ticket PDFs
+media/
+# Re-include public/media/ so deployed movie poster images are not ignored
+!public/media/
+staticfiles/
+
+# Backups
+backups/
+*_backup_*/
+*.bak
+*.backup
+*.task6-backup
+
+# Local development files
+.vscode/
+.idea/
+*.log
+.DS_Store
+Thumbs.db
+
+# Project-specific backup files
+*.backup-*
+*.backup
+*.backup.*
+*.bak
+*.backup-before-*
+*.before-*-fix*
+*.backup-before-*
+*.task6-backup
+backup_before_*.py
+*_backup_*.py
+
+# Temporary Task 6 repair scripts
+/create_task6_payment_helper.py
+/fix_qr_url.py
+/fix_task6_payment_links.py
+/fix_task6_tasks.py
+.vercel
+.env*

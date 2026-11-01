@@ -1,0 +1,67 @@
+﻿{% extends "users/basic.html" %}
+
+{% block title %}Report Review - {{ review.movie.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h1 class="h5 mb-0">Report Review</h1>
+                </div>
+
+                <div class="card-body">
+                    <p>
+                        Movie: <strong>{{ review.movie.name }}</strong>
+                    </p>
+
+                    <div class="border rounded p-3 mb-4">
+                        <p class="mb-1">
+                            <strong>{{ review.user.username }}</strong>
+                        </p>
+                        <p class="mb-0">{{ review.comment }}</p>
+                    </div>
+
+                    {% if errors %}
+                    <div class="alert alert-danger" role="alert">
+                        <ul class="mb-0">
+                            {% for error in errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" action="{% url 'report_review' review.id %}">
+                        {% csrf_token %}
+
+                        <div class="form-group mb-3">
+                            <label for="report-reason">Reason for reporting</label>
+                            <select id="report-reason" name="reason" class="form-control" required>
+                                <option value="">Select a reason</option>
+                                <option value="spam" {% if selected_reason == "spam" %}selected{% endif %}>Spam</option>
+                                <option value="abuse" {% if selected_reason == "abuse" %}selected{% endif %}>Abusive content</option>
+                                <option value="hate" {% if selected_reason == "hate" %}selected{% endif %}>Hateful content</option>
+                                <option value="inappropriate" {% if selected_reason == "inappropriate" %}selected{% endif %}>Inappropriate content</option>
+                                <option value="other" {% if selected_reason == "other" %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="report-explanation">Additional details (optional)</label>
+                            <textarea id="report-explanation" name="explanation" class="form-control" rows="4" maxlength="1000">{{ explanation }}</textarea>
+                            <small class="form-text text-muted">Maximum 1000 characters.</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-danger">Submit Report</button>
+                        <a href="{% url 'movie_detail' review.movie_id %}#reviews" class="btn btn-outline-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

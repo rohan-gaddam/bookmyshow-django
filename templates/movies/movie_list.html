@@ -1,0 +1,480 @@
+﻿{% extends "users/basic.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-5">Movies</h1>
+
+    <!-- Discovery form: search, filters, sort. GET so links are bookmarkable. -->
+    <form method="GET" action="{% url 'movie_list' %}" class="filter-form mb-4">
+        <input type="hidden" name="search" value="{{ request.GET.search|default_if_none:'' }}"/>
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-md-4 col-lg-3">
+                <label class="form-label small text-muted d-block mb-1">Search by title</label>
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input
+                        class="form-control"
+                        name="search"
+                        placeholder="Search movies by title"
+                        type="text"
+                        value="{{ request.GET.search|default_if_none:'' }}"
+                        aria-label="Search for movies"
+                    />
+                </div>
+            </div>
+
+            <div class="col-6 col-sm-4 col-md-2 col-lg-2">
+                <label class="form-label small text-muted d-block mb-1">Genre</label>
+                <select class="form-select" name="genre">
+                    <option value="">Any genre</option>
+                    {% for genre in genres %}
+                    <option value="{{ genre.id }}"
+                            {% if request.GET.genre|stringformat:"s" == genre.id|stringformat:"s" %}selected{% endif %}>
+                        {{ genre.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-6 col-sm-4 col-md-2 col-lg-2">
+                <label class="form-label small text-muted d-block mb-1">Language</label>
+                <select class="form-select" name="language">
+                    <option value="">Any language</option>
+                    {% for language in languages %}
+                    <option value="{{ language.id }}"
+                            {% if request.GET.language|stringformat:"s" == language.id|stringformat:"s" %}selected{% endif %}>
+                        {{ language.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-6 col-sm-4 col-md-2 col-lg-2">
+                <label class="form-label small text-muted d-block mb-1">City</label>
+                <select class="form-select" name="city">
+                    <option value="">Any city</option>
+                    {% for city in cities %}
+                    <option value="{{ city }}"
+                            {% if request.GET.city == city %}selected{% endif %}>
+                        {{ city }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-6 col-sm-4 col-md-2 col-lg-2">
+                <label class="form-label small text-muted d-block mb-1">Theater</label>
+                <select class="form-select" name="theater">
+                    <option value="">Any theater</option>
+                    {% for theater in theaters %}
+                    <option value="{{ theater.id }}"
+                            {% if request.GET.theater|stringformat:"s" == theater.id|stringformat:"s" %}selected{% endif %}>
+                        {{ theater.name }}{% if theater.city %} ({{ theater.city }}){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-6 col-sm-4 col-md-2 col-lg-2">
+                <label class="form-label small text-muted d-block mb-1">Release date</label>
+                <input
+                    class="form-control"
+                    name="release_date"
+                    type="date"
+                    value="{{ request.GET.release_date|default_if_none:'' }}"
+                />
+            </div>
+
+            <div class="col-6 col-sm-4 col-md-2 col-lg-2">
+                <label class="form-label small text-muted d-block mb-1">Min rating</label>
+                <input
+                    class="form-control"
+                    name="min_rating"
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="10"
+                    value="{{ request.GET.min_rating|default_if_none:'' }}"
+                    placeholder="e.g. 7.0"
+                />
+            </div>
+
+            <div class="col-6 col-sm-4 col-md-2 col-lg-2">
+                <label class="form-label small text-muted d-block mb-1">Show date</label>
+                <input
+                    class="form-control"
+                    name="show_date"
+                    type="date"
+                    value="{{ request.GET.show_date|default_if_none:'' }}"
+                />
+            </div>
+
+            <div class="col-6 col-sm-4 col-md-2 col-lg-2">
+                <label class="form-label small text-muted d-block mb-1">Sort by</label>
+                <select class="form-select" name="sort">
+                    <option value="" {% if sort == '' %}selected{% endif %}>Default</option>
+                    <option value="popularity" {% if sort == 'popularity' %}selected{% endif %}>Popularity</option>
+                    <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest releases</option>
+                    <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Rating</option>
+                    <option value="price" {% if sort == 'price' %}selected{% endif %}>Ticket price</option>
+                </select>
+                <small class="form-text text-muted">
+                    Ticket price is a single global rate, so all movies share it.
+                </small>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-auto d-grid">
+                <button class="btn btn-primary btn-lg btn-apply" type="submit">Apply Filters</button>
+            </div>
+            <div class="col-12 col-sm-6 col-md-auto d-grid">
+                <a href="{% url 'movie_list' %}" class="btn btn-outline-secondary btn-lg btn-reset">Reset</a>
+            </div>
+        </div>
+    </form>
+
+    <!-- Dynamic matching-result count reflecting all active search/filter params. -->
+    <div class="result-count mb-3">
+        <p>
+            <strong class="count">{{ total_count }}</strong>
+            movie{{ total_count|pluralize }}
+            {% if search_query %}matching search “{{ search_query }}”{% endif %}
+            {% if has_filters %}with the applied filters{% endif %}
+            .
+        </p>
+    </div>
+
+    {% if not search_query and not has_filters and recommended_movies %}
+    <section class="mb-5">
+        <h2 class="mb-3">Recommended for You</h2>
+        <p class="text-muted">
+            Based on your booking history and recently viewed movies.
+        </p>
+        <div class="row">
+            {% for movie in recommended_movies %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {% if movie.image %}
+                    <img
+                        src="{{ movie.image.url }}"
+                        class="card-img-top"
+                        alt="{{ movie.name }}"
+                        style="height: 250px; object-fit: cover;"
+                    >
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ movie.name }}</h5>
+                        <p class="card-text">
+                            <i class="fas fa-star text-warning"></i> {{ movie.rating }}
+                        </p>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                {% for genre in movie.genres.all %}{{ genre.name }}{% if not forloop.last %}, {% endif %}{% empty %}Genre not specified{% endfor %}
+                            </small>
+                        </p>
+                    </div>
+                    <div class="card-footer bg-white border-top-0">
+                        <a href="{% url 'movie_detail' movie.id %}"
+                           class="btn btn-outline-secondary btn-block">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if not search_query and not has_filters %}
+    <section class="mb-5">
+        <h2 class="mb-3">Trending Movies</h2>
+        <p class="text-muted">Top-rated movies in our collection.</p>
+        <div class="row">
+            {% for movie in trending_movies %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {% if movie.image %}
+                    <img src="{{ movie.image.url }}" class="card-img-top"
+                         alt="{{ movie.name }}" style="height: 250px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ movie.name }}</h5>
+                        <p class="card-text">
+                            <i class="fas fa-star text-warning"></i> {{ movie.rating }}
+                        </p>
+                    </div>
+                    <div class="card-footer bg-white border-top-0">
+                        <a href="{% url 'movie_detail' movie.id %}"
+                           class="btn btn-outline-secondary btn-block">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12"><p>No movies available yet.</p></div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="mb-5">
+        <h2 class="mb-3">Recent Releases</h2>
+        <p class="text-muted">Movies ordered by their release date.</p>
+        <div class="row">
+            {% for movie in recent_releases %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    {% if movie.image %}
+                    <img src="{{ movie.image.url }}" class="card-img-top"
+                         alt="{{ movie.name }}" style="height: 250px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ movie.name }}</h5>
+                        <p class="card-text">
+                            <i class="fas fa-calendar-alt"></i>
+                            {{ movie.release_date|date:"M d, Y" }}
+                        </p>
+                    </div>
+                    <div class="card-footer bg-white border-top-0">
+                        <a href="{% url 'movie_detail' movie.id %}"
+                           class="btn btn-outline-secondary btn-block">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12"><p>No release dates have been added yet.</p></div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Paginated, server-side filtered movie results. -->
+    <div class="row" id="movieList">
+        {% for movie in movies %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                {% if movie.image %}
+                <img src="{{ movie.image.url }}" class="card-img-top"
+                     alt="{{ movie.name }}" style="height: 300px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ movie.name }}</h5>
+                    <p class="card-text">
+                        <i class="fas fa-star text-warning"></i> {{ movie.rating }}
+                    </p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-users"></i> Cast: {{ movie.cast }}
+                        </small>
+                    </p>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <a href="{% url 'movie_detail' movie.id %}" class="btn btn-outline-secondary btn-block mb-2">
+                        View Details
+                    </a>
+                    <a href="{% url 'theater_list' movie.id %}" class="btn btn-outline-primary btn-block">
+                        View Theaters <i class="fas fa-chevron-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            {% if search_query or has_filters %}
+            <p class="lead">No movies found matching your search and filters. Try a different combination.</p>
+            {% else %}
+            <p class="lead">No movies found. Add some movies to get started.</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination controls preserving all active search, filter and sort parameters. -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-5" aria-label="Movie pagination">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?{{ querystring }}{% if querystring %}&{% endif %}page={{ page_obj.previous_page_number }}">
+                    &laquo; Previous
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">&laquo; Previous</span>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' or num == 1 or num == page_obj.paginator.num_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="?{{ querystring }}{% if querystring %}&{% endif %}page={{ num }}">{{ num }}</a>
+                </li>
+                {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?{{ querystring }}{% if querystring %}&{% endif %}page={{ page_obj.next_page_number }}">
+                    Next &raquo;
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Next &raquo;</span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+<style>
+    .card {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    }
+</style>
+
+<!-- Discovery filter form: modern, clean, responsive styling -->
+<style>
+    /* ===== Filter form container ===== */
+    .filter-form {
+        background: #ffffff;
+        padding: 1.5rem 1.25rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Labels above controls */
+    .filter-form .form-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    /* Search input with icon */
+    .filter-form .search-wrapper {
+        position: relative;
+        display: block;
+    }
+    .filter-form .search-wrapper .fa-search {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 1rem;
+        pointer-events: none;
+    }
+    .filter-form .search-wrapper input {
+        padding-left: 2.75rem;
+    }
+
+    /* Consistent inputs and dropdowns */
+    .filter-form .form-control,
+    .filter-form .form-select {
+        height: 3.125rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        color: #1e293b;
+        font-size: 0.9375rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .filter-form .form-select {
+        appearance: none;
+        background-repeat: no-repeat;
+        background-position: right 0.9rem center;
+        background-size: 1rem 1rem;
+        padding-right: 2.5rem;
+    }
+    .filter-form .form-select option {
+        background: #ffffff;
+        color: #1e293b;
+        font-size: 0.9375rem;
+        padding: 0.5rem 1rem;
+    }
+    .filter-form .form-control:focus,
+    .filter-form .form-select:focus {
+        background: #ffffff;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        outline: none;
+    }
+
+    /* Apply Filters: prominent primary button */
+    .filter-form .btn-apply {
+        background: #6366f1;
+        border: none;
+        color: #ffffff;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: background 0.2s ease, transform 0.1s ease;
+    }
+    .filter-form .btn-apply:hover {
+        background: #4f46e5;
+    }
+    .filter-form .btn-apply:active {
+        transform: translateY(1px);
+    }
+
+    /* Reset: clean secondary outlined button */
+    .filter-form .btn-reset {
+        background: transparent;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    .filter-form .btn-reset:hover {
+        border-color: #94a3b8;
+        color: #334155;
+        background: #f1f5f9;
+    }
+
+    /* Result count */
+    .result-count p {
+        margin: 0;
+        font-size: 1rem;
+        color: #334155;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .result-count .count {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #6366f1;
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        // Add animation to cards on hover
+        $('.card').hover(
+            function() { $(this).addClass('shadow'); },
+            function() { $(this).removeClass('shadow'); }
+        );
+    });
+</script>
+{% endblock %}
