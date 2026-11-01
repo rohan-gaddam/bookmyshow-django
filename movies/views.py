@@ -1654,11 +1654,15 @@ def serve_media(request, file_path):
     the request is forwarded to Django, which reads the file from MEDIA_ROOT
     and serves it with the correct Content-Type.
     """
+    import tempfile
     # Try common image extensions
     for ext in ('.jpg', '.jpeg', '.png', '.gif', '.webp'):
-        full_path = os.path.join(settings.MEDIA_ROOT, f"{file_path}{ext}")
-        if os.path.exists(full_path):
-            with open(full_path, 'rb') as f:
+        rel_path = f"{file_path}{ext}"
+        full_path = os.path.join(settings.MEDIA_ROOT, rel_path)
+        tmp_path = os.path.join(tempfile.gettempdir(), 'media', rel_path)
+        active_path = full_path if os.path.exists(full_path) else (tmp_path if os.path.exists(tmp_path) else None)
+        if active_path:
+            with open(active_path, 'rb') as f:
                 content = f.read()
             content_type = 'image/jpeg'
             if ext == '.png':

@@ -57,6 +57,7 @@ EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'bookmyseat', 'static', 'media')
+DEFAULT_FILE_STORAGE = 'movies.storage.ServerlessFileSystemStorage'
 
 
 ROOT_URLCONF = 'bookmyseat.urls'
