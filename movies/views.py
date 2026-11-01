@@ -1,6 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
+import os
 import hmac
 import hashlib
 from datetime import datetime
@@ -8,7 +9,7 @@ from decimal import Decimal, InvalidOperation
 from django.utils.crypto import constant_time_compare
 import razorpay
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 import re
 import time
 from urllib.parse import parse_qs, urlsplit
@@ -16,7 +17,7 @@ from urllib.parse import parse_qs, urlsplit
 from django.contrib import messages
 from django.db.models import Avg, Count, F, Q
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import FileResponse, Http404, JsonResponse
+from django.http import FileResponse, Http404, JsonResponse, HttpResponse
 from django.utils.encoding import escape_uri_path
 from .models import Movie, Theater, Seat, Booking, Genre, Language, Review, ReviewReport, SeatReservation, Payment, PaymentAttempt, Ticket
 from .payment_utils import get_paid_payment_for_booking
@@ -1614,3 +1615,31 @@ def verify_ticket(request, token):
         'ticket_status': ticket.status,
     })
 
+
+def serve_media(request, file_path):
+    """
+    Serve media files (movie posters) from MEDIA_ROOT.
+
+    This view is used instead of Django's static() helper because Vercel's
+    edge layer intercepts requests with image extensions (.jpg, .png, etc.)
+    before they reach Django. By using a URL path without a file extension,
+    the request is forwarded to Django, which reads the file from MEDIA_ROOT
+    and serves it with the correct Content-Type.
+    """
+    # Try common image extensions
+    for ext in ('.jpg', '.jpeg', '.png', '.gif', '.webp'):
+        full_path = os.path.join(settings.MEDIA_ROOT, f"{file_path}{ext}")
+        if os.path.exists(full_path):
+            with open(full_path, 'rb') as f:
+                content = f.read()
+            content_type = 'image/jpeg'
+            if ext == '.png':
+                content_type = 'image/png'
+            elif ext == '.gif':
+                content_type = 'image/gif'
+            elif ext == '.webp':
+                content_type = 'image/webp'
+            elif ext == '.jpeg':
+                content_type = 'image/jpeg'
+            return HttpResponse(content, content_type=content_type)
+    raise Http404("Media file not found")

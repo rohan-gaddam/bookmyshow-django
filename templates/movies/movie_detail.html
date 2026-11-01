@@ -1,11 +1,12 @@
 ﻿{% extends "users/basic.html" %}
+{% load movie_extras %}
 
 {% block content %}
 <div class="container py-5">
     <div class="row">
         <div class="col-md-4 mb-4">
             {% if movie.image %}
-            <img src="{{ movie.image.url }}" alt="{{ movie.name }}"
+            <img src="{{ movie.image.url|media_file_url }}" alt="{{ movie.name }}"
                  class="img-fluid rounded shadow-sm movie-poster">
             {% endif %}
         </div>
@@ -94,7 +95,7 @@
             {% for poster in additional_posters %}
             <div class="col-6 col-md-3 mb-3">
                 <img
-                    src="{{ poster.image.url }}"
+                    src="{{ poster.image.url|media_file_url }}"
                     alt="{% if poster.alt_text %}{{ poster.alt_text }}{% else %}{{ movie.name }} poster{% endif %}"
                     class="img-fluid rounded shadow-sm additional-poster-image"
                     loading="lazy"
@@ -114,7 +115,7 @@
                 <div class="card h-100 shadow-sm">
                     {% if recommended.image %}
                     <img
-                        src="{{ recommended.image.url }}"
+                        src="{{ recommended.image.url|media_file_url }}"
                         class="card-img-top"
                         alt="{{ recommended.name }}"
                         style="height: 250px; object-fit: cover;"

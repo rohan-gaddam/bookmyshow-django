@@ -1,4 +1,6 @@
-{% extends "users/basic.html" %} {% block content %}
+{% extends "users/basic.html" %}
+{% load movie_extras %}
+{% block content %}
 <style>
     body {
       font-family: "Arial", sans-serif;
@@ -130,7 +132,7 @@
         <a href="{% url 'theater_list' movie.id %}" class="text-decoration-none">
           <div class="card h-100">
             <img
-              src="{{ movie.image.url }}"
+              src="{{ movie.image.url|media_file_url }}"
               class="card-img-top"
               alt="{{ movie.name }}"
               height="300"
@@ -388,7 +390,7 @@
 <ul>
     {% for movie in movies%}
     <li>
-        <img src="{{movie.image.url}}" alt="image" >
+        <img src="{{movie.image.url|media_file_url}}" alt="image" >
         <strong>{{movie.name}}</strong>{{movie.rating}}
         <p>Cast:{{movie.cast}}</p>
         <a href="{% url 'theater_list' movie.id %}">View Theaters</a>

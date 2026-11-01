@@ -27,6 +27,7 @@ from .models import (
     PaymentAttempt,
     Ticket,
 )
+from .templatetags.movie_extras import media_file_url
 import hashlib
 import hmac
 import json
@@ -292,8 +293,8 @@ class MovieDetailRenderingTests(MovieDetailTestBase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'More Posters')
-        self.assertContains(response, primary.image.url)
-        self.assertContains(response, secondary.image.url)
+        self.assertContains(response, media_file_url(primary.image.url))
+        self.assertContains(response, media_file_url(secondary.image.url))
         self.assertContains(response, 'Primary poster')
         self.assertContains(response, 'Secondary poster')
         self.assertEqual(
@@ -307,7 +308,7 @@ class MovieDetailRenderingTests(MovieDetailTestBase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'More Posters')
         self.assertEqual(response.context['additional_posters'], [])
-        self.assertContains(response, self.movie.image.url)
+        self.assertContains(response, media_file_url(self.movie.image.url))
 
     def test_main_image_is_not_duplicated_in_gallery(self):
         duplicate = MoviePoster.objects.create(
@@ -346,7 +347,7 @@ class MovieDetailRenderingTests(MovieDetailTestBase):
         self.assertContains(response, 'Test description')
         self.assertContains(response, 'View Theaters and Showtimes')
         self.assertContains(response, 'Customer Reviews')
-        self.assertContains(response, self.movie.image.url)
+        self.assertContains(response, media_file_url(self.movie.image.url))
 
     def test_existing_movie_urls_resolve(self):
         self.assertEqual(reverse('movie_list'), '/movies/')
