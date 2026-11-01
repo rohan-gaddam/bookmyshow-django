@@ -201,4 +201,4 @@ TICKETS_URL = os.path.join(MEDIA_URL, "tickets/")
 # Directory used by collectstatic for deployment.
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-
+TICKET_VERIFICATION_BASE_URL = os.environ.get('TICKET_VERIFICATION_BASE_URL', 'https://bookmyshow-hazel.vercel.app')

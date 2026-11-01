@@ -58,3 +58,8 @@ backup_before_*.py
 /fix_task6_tasks.py
 .vercel
 .env*
+
+.neon_*.py
+*.gif
+tickets/
+*.poster-backup

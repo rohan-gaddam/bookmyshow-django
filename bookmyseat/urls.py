@@ -3,13 +3,15 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from movies.views import serve_media
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
-    path('',include('users.urls')),
+    path('', include('users.urls')),
     path('admin-dashboard/', include('movies.dashboard_urls')),
     path('movies/', include('movies.urls')),
     path('media-file/<path:file_path>/', serve_media, name='serve_media'),
+    path('media-file/<path:file_path>', serve_media),
 ]
 
 if settings.DEBUG:

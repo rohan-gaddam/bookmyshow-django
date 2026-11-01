@@ -1646,34 +1646,102 @@ def verify_ticket(request, token):
 
 def serve_media(request, file_path):
     """
-    Serve media files (movie posters) from MEDIA_ROOT.
+    Serve media files (movie posters) reliably on both local dev and Vercel serverless.
 
-    This view is used instead of Django's static() helper because Vercel's
-    edge layer intercepts requests with image extensions (.jpg, .png, etc.)
-    before they reach Django. By using a URL path without a file extension,
-    the request is forwarded to Django, which reads the file from MEDIA_ROOT
-    and serves it with the correct Content-Type.
+    This view resolves files across multiple search directories (settings.MEDIA_ROOT,
+    bundled public/media, static media, and ephemeral /tmp/media).
+    If a specific file is missing, it provides a graceful fallback to a default
+    valid movie poster with HTTP 200 and Cache-Control headers so that images
+    never break on the frontend or during page refreshes.
     """
     import tempfile
-    # Try common image extensions
-    for ext in ('.jpg', '.jpeg', '.png', '.gif', '.webp'):
-        rel_path = f"{file_path}{ext}"
-        full_path = os.path.join(settings.MEDIA_ROOT, rel_path)
-        tmp_path = os.path.join(tempfile.gettempdir(), 'media', rel_path)
-        active_path = full_path if os.path.exists(full_path) else (tmp_path if os.path.exists(tmp_path) else None)
+
+    clean_path = (file_path or '').strip('/')
+    extensions = ('', '.jpg', '.jpeg', '.png', '.webp', '.gif')
+
+    search_dirs = [
+        settings.MEDIA_ROOT,
+        os.path.join(settings.BASE_DIR, 'bookmyseat', 'static', 'media'),
+        os.path.join(settings.BASE_DIR, 'public', 'media'),
+        os.path.join(settings.BASE_DIR, 'staticfiles', 'media'),
+        os.path.join(tempfile.gettempdir(), 'media'),
+    ]
+
+    candidates = []
+    for ext in extensions:
+        candidates.append(f"{clean_path}{ext}")
+    if '.' in clean_path:
+        base_no_ext = clean_path.rsplit('.', 1)[0]
+        for ext in extensions:
+            cand = f"{base_no_ext}{ext}"
+            if cand not in candidates:
+                candidates.append(cand)
+
+    active_path = None
+    for s_dir in search_dirs:
+        if not s_dir or not os.path.exists(s_dir):
+            continue
+        for rel in candidates:
+            cand_path = os.path.join(s_dir, rel)
+            if os.path.isfile(cand_path) and os.path.getsize(cand_path) > 100:
+                active_path = cand_path
+                break
         if active_path:
-            with open(active_path, 'rb') as f:
-                content = f.read()
-            content_type = 'image/jpeg'
-            if ext == '.png':
-                content_type = 'image/png'
-            elif ext == '.gif':
-                content_type = 'image/gif'
-            elif ext == '.webp':
-                content_type = 'image/webp'
-            elif ext == '.jpeg':
-                content_type = 'image/jpeg'
-            return HttpResponse(content, content_type=content_type)
+            break
+
+    # Case-insensitive search on Linux/Vercel
+    if not active_path and '/' in clean_path:
+        sub_folder, target_name = clean_path.rsplit('/', 1)
+        target_name_lower = target_name.lower()
+        target_base_lower = target_name_lower.rsplit('.', 1)[0] if '.' in target_name_lower else target_name_lower
+
+        for s_dir in search_dirs:
+            if not s_dir or not os.path.exists(s_dir):
+                continue
+            folder_path = os.path.join(s_dir, sub_folder)
+            if os.path.isdir(folder_path):
+                try:
+                    for actual_file in os.listdir(folder_path):
+                        actual_file_lower = actual_file.lower()
+                        actual_base_lower = actual_file_lower.rsplit('.', 1)[0] if '.' in actual_file_lower else actual_file_lower
+                        if actual_file_lower == target_name_lower or actual_base_lower == target_base_lower:
+                            cand_path = os.path.join(folder_path, actual_file)
+                            if os.path.isfile(cand_path) and os.path.getsize(cand_path) > 100:
+                                active_path = cand_path
+                                break
+                except Exception:
+                    pass
+            if active_path:
+                break
+
+    # Fallback to default poster if requested file could not be found anywhere
+    if not active_path:
+        for s_dir in search_dirs:
+            if not s_dir or not os.path.exists(s_dir):
+                continue
+            default_poster = os.path.join(s_dir, 'movies', '635217f73e372771013edb4c-the-avengers-poster-marvel-movie-canvas1.jpg')
+            if os.path.isfile(default_poster) and os.path.getsize(default_poster) > 100:
+                active_path = default_poster
+                break
+
+    if active_path and os.path.isfile(active_path):
+        with open(active_path, 'rb') as f:
+            content = f.read()
+
+        ext = os.path.splitext(active_path)[1].lower()
+        content_type_map = {
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.png': 'image/png',
+            '.webp': 'image/webp',
+            '.gif': 'image/gif',
+        }
+        content_type = content_type_map.get(ext, 'image/jpeg')
+
+        response = HttpResponse(content, content_type=content_type)
+        response['Cache-Control'] = 'public, max-age=86400, stale-while-revalidate=604800'
+        return response
+
     raise Http404("Media file not found")
 
 
