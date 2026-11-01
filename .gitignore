@@ -21,6 +21,8 @@ db.sqlite3-*
 media/
 # Re-include public/media/ so deployed movie poster images are not ignored
 !public/media/
+# Re-include bookmyseat/static/media/ for deployed poster images served by Django
+!bookmyseat/static/media/
 staticfiles/
 
 # Backups

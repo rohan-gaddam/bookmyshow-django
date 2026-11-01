@@ -56,7 +56,7 @@ AUTH_USER_MODEL='auth.User'
 EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'public', 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'bookmyseat', 'static', 'media')
 
 
 ROOT_URLCONF = 'bookmyseat.urls'
