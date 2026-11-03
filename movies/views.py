@@ -665,7 +665,7 @@ def create_payment_order(request, theater_id):
                 reservation.pk: reservation.expires_at
                 for reservation in reservations
             }
-            payment_expires_at = now + timezone.timedelta(minutes=15)
+            payment_expires_at = now + timezone.timedelta(minutes=5)
             for reservation in reservations:
                 reservation.expires_at = payment_expires_at
                 reservation.save(update_fields=['expires_at'])
