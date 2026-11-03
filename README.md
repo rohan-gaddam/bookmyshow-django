@@ -5,7 +5,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon%20Serverless-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech/)
 [![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel&logoColor=white)](https://bookmyshow-hazel.vercel.app/)
 [![Razorpay](https://img.shields.io/badge/Payments-Razorpay-blue?style=for-the-badge&logo=razorpay&logoColor=white)](https://razorpay.com/)
-[![Tests](https://img.shields.io/badge/Tests-132%20Passing-brightgreen?style=for-the-badge)](https://github.com/rohan-gaddam/bookmyshow-django)
+[![Tests](https://img.shields.io/badge/Tests-133%20Passing-brightgreen?style=for-the-badge)](https://github.com/rohan-gaddam/bookmyshow-django)
 
 A production-ready cinema booking and theater management web application inspired by BookMyShow. Built with **Django**, **PostgreSQL (Neon Serverless)**, and deployed on **Vercel**, featuring real-time seat reservation with concurrency locks, Razorpay payment processing, automated PDF ticket generation with QR code verification, and a comprehensive business analytics dashboard.
 
@@ -85,15 +85,15 @@ python manage.py test movies
 
 **Results:**
 ```text
-Found 132 test(s).
+Found 133 test(s).
 Creating test database for alias 'default'...
 ....................................................................................................................................
 ----------------------------------------------------------------------
-Ran 132 tests in 28.452s
+Ran 133 tests in 28.452s
 
 OK
 ```
-**Status: 132 passed, 0 failures, 0 errors.**
+**Status: 133 passed, 0 failures, 0 errors.**
 
 ---
 

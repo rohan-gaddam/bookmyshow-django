@@ -1727,6 +1727,31 @@ class PaymentConfirmationWorkflowTests(MovieDetailTestBase):
             failed_attempt.failure_reason,
             "Payment order creation failed.",
         )
+
+    def test_order_creation_preserves_original_two_minute_reservation_expiry(self):
+        original_expiry = timezone.now() + timezone.timedelta(minutes=2)
+        SeatReservation.objects.filter(seat=self.seat).delete()
+        reservation = SeatReservation.objects.create(
+            seat=self.seat,
+            user=self.user,
+            expires_at=original_expiry,
+        )
+        with patch("movies.views.razorpay.Client") as client_class:
+            client = client_class.return_value
+            client.order.create.return_value = {
+                "id": "order_test_2min",
+                "amount": 20000,
+            }
+            response = self.client.post(
+                reverse("create_payment_order", args=[self.theater.pk]),
+                {"seats": [str(self.seat.pk)]},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        reservation.refresh_from_db()
+        self.assertEqual(reservation.expires_at, original_expiry)
+        self.assertEqual(data["reservation_expires_at"], original_expiry.isoformat())
     def test_successful_payment_confirms_booking_and_records_attempt(self):
         from unittest.mock import patch
 

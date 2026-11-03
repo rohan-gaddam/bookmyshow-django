@@ -256,9 +256,20 @@
         if (confirmButton) confirmButton.disabled = true;
       }
 
+      const startPaymentBtn = document.getElementById('start-payment-button');
+      if (startPaymentBtn) {
+        startPaymentBtn.disabled = true;
+      }
+
       if (statusMessage) {
         statusMessage.textContent =
-          'Your reservation expired. Refresh the page and select available seats again.';
+          'Your 2-minute reservation expired. The seat hold has been released.';
+      }
+
+      try {
+        window.dispatchEvent(new CustomEvent('reservation-expired'));
+      } catch (e) {
+        // ignore if not supported
       }
 
       // Ask the server for authoritative availability after expiry.
@@ -350,6 +361,21 @@
 
   if (!container || !button || !status) return;
 
+  let currentRazorpayCheckout = null;
+
+  window.addEventListener('reservation-expired', function () {
+    if (currentRazorpayCheckout) {
+      try {
+        currentRazorpayCheckout.close();
+      } catch (e) {
+        // ignore if already closed
+      }
+      currentRazorpayCheckout = null;
+    }
+    button.disabled = true;
+    setStatus('Your 2-minute reservation expired. The seat hold has been released.', true);
+  });
+
   function csrfToken() {
     const input = container.querySelector('input[name="csrfmiddlewaretoken"]');
     return input ? input.value : '';
@@ -425,7 +451,7 @@
 
       await loadRazorpay();
 
-      const checkout = new Razorpay({
+      currentRazorpayCheckout = new Razorpay({
         key: order.key_id,
         amount: order.amount,
         currency: order.currency,
@@ -505,7 +531,7 @@
         button.disabled = false;
       });
 
-      checkout.open();
+      currentRazorpayCheckout.open();
     } catch (error) {
       setStatus(error.message || 'Could not start payment. Please try again.', true);
       button.disabled = false;
