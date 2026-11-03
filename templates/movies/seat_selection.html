@@ -451,7 +451,7 @@
 
       await loadRazorpay();
 
-      currentRazorpayCheckout = new Razorpay({
+      const checkout = new Razorpay({
         key: order.key_id,
         amount: order.amount,
         currency: order.currency,
@@ -526,12 +526,14 @@
         }
       });
 
+      currentRazorpayCheckout = checkout;
+
       checkout.on('payment.failed', function () {
         setStatus('Payment failed. Your booking is not confirmed. You can retry while your reservation remains active.', true);
         button.disabled = false;
       });
 
-      currentRazorpayCheckout.open();
+      checkout.open();
     } catch (error) {
       setStatus(error.message || 'Could not start payment. Please try again.', true);
       button.disabled = false;
