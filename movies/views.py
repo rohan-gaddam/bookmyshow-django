@@ -630,7 +630,8 @@ def create_payment_order(request, theater_id):
         return JsonResponse({'error': 'Ticket pricing is misconfigured.'}, status=500)
 
     now = timezone.now()
-    reservation_expires_at = None
+    original_reservation_expiries = {}
+    payment_expires_at = None
 
     try:
         with transaction.atomic():
@@ -659,8 +660,15 @@ def create_payment_order(request, theater_id):
             if any(reservation.seat.theater_id != theater.id for reservation in reservations):
                 return JsonResponse({'error': 'Invalid theater seat selection.'}, status=400)
 
-            # The reservation retains its original 2-minute hold timer without extending.
-            reservation_expires_at = min(reservation.expires_at for reservation in reservations)
+            # Extend only after the user starts payment; normal selection stays at 2 minutes.
+            original_reservation_expiries = {
+                reservation.pk: reservation.expires_at
+                for reservation in reservations
+            }
+            payment_expires_at = now + timezone.timedelta(minutes=15)
+            for reservation in reservations:
+                reservation.expires_at = payment_expires_at
+                reservation.save(update_fields=['expires_at'])
 
             payment = Payment.objects.create(
                 user=request.user,
@@ -706,11 +714,18 @@ def create_payment_order(request, theater_id):
             'currency': 'INR',
             'key_id': settings.RAZORPAY_KEY_ID,
             'ticket_count': len(selected_ids),
-            'reservation_expires_at': reservation_expires_at.isoformat(),
+            'reservation_expires_at': payment_expires_at.isoformat(),
         })
 
     except Exception:
-        # Reservation expiry was not modified, so no restoration is needed.
+        # If order creation failed, restore each reservation's original expiry.
+        if payment_expires_at is not None:
+            for reservation_id, original_expiry in original_reservation_expiries.items():
+                SeatReservation.objects.filter(
+                    pk=reservation_id,
+                    user=request.user,
+                    expires_at=payment_expires_at,
+                ).update(expires_at=original_expiry)
 
         # Never return provider exception details or credentials to the browser.
         if 'payment' in locals():
